@@ -1,7 +1,28 @@
 use std::fs;
+use std::str::FromStr;
+mod instruction;
+use instruction::Instruction;
 
-fn binary_translate(riscv_asm: &str) -> &str {
-    "noop"
+fn parse_asm(asm: &str) -> Vec<Instruction> {
+    asm.lines()
+        .filter_map(|line| {
+            let parts: Vec<&str> = line.split_whitespace().collect();
+            if parts.is_empty() {
+                None
+            } else {
+                Instruction::from_str(parts[0]).ok()
+            }
+        })
+        .collect()
+}
+
+fn binary_translate(riscv_asm: &str) -> String {
+    let instructions = parse_asm(riscv_asm);
+    instructions
+        .into_iter()
+        .map(|instr| format!("{:?}", instr))
+        .collect::<Vec<String>>()
+        .join("\n")
 }
 
 fn main() {
