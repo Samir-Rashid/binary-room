@@ -1,4 +1,4 @@
-void main(void) {
+int main(void) {
 	int x = 3;
 	int y = 4;
 
