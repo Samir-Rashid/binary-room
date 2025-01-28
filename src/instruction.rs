@@ -1,4 +1,8 @@
-use std::str::FromStr;
+/// This file defines all the supported ARM and RISC-V instructions we support.
+/// We use `strum` to assist in serializing asm files to our [`Instruction`] enum.
+///
+/// We do not aim for completness of translating every possible instruction,
+/// but we do want to thoroughly test for correctness.
 use strum_macros::EnumString;
 
 #[derive(Debug, EnumString)]
@@ -48,32 +52,3 @@ pub enum Instruction {
     Beq,
 }
 
-impl FromStr for Instruction {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "addi" => Ok(Instruction::Addi),
-            "sd" => Ok(Instruction::Sd),
-            "ld" => Ok(Instruction::Ld),
-            "sw" => Ok(Instruction::Sw),
-            "lw" => Ok(Instruction::Lw),
-            "mv" => Ok(Instruction::Mv),
-            "addw" => Ok(Instruction::Addw),
-            "sext.w" => Ok(Instruction::SextW),
-            "jr" => Ok(Instruction::Jr),
-            "li" => Ok(Instruction::Li),
-            "add" => Ok(Instruction::Add),
-            "sub" => Ok(Instruction::Sub),
-            "mov" => Ok(Instruction::Mov),
-            "ldr" => Ok(Instruction::Ldr),
-            "str" => Ok(Instruction::Str),
-            "b" => Ok(Instruction::B),
-            "bl" => Ok(Instruction::Bl),
-            "bx" => Ok(Instruction::Bx),
-            "cmp" => Ok(Instruction::Cmp),
-            "beq" => Ok(Instruction::Beq),
-            _ => Err(()),
-        }
-    }
-}
