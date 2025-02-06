@@ -1,22 +1,42 @@
 {
-  description = "A very basic flake";
+  description = "binary-room";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-  };
-
-
-  outputs = { self, nixpkgs }: let
-	  pkgs = import nixpkgs {
-            system = "x86_64-linux";
-	  };
-   in {
-    devShells.x86_64-linux.default = pkgs.mkShell {
-      # Use the same mkShell as documented above
-        packages = with pkgs; [
-          # TODO: @Anthony, you can change this to use Fenix if you would like
-          rustup
-      ];
+    nixpkgs.url = "nixpkgs/nixos-unstable";
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
+    flake-utils.url = "github:numtide/flake-utils";
   };
+
+
+  outputs = { self, nixpkgs, fenix, flake-utils }:
+    flake-utils.lib.eachDefaultSystem
+      (system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ fenix.overlays.default ];
+          };
+          rustToolchain = fenix.packages."${system}".stable;
+        in
+        {
+          devShells.default = pkgs.mkShell {
+            nativeBuildInputs = [
+              (rustToolchain.withComponents
+              [
+                "cargo"
+                "clippy"
+                "rust-src"
+                "rustc"
+                "rustfmt"
+              ])
+            ];
+            packages = with pkgs; [
+              rust-analyzer-nightly
+            ];
+          };
+        }
+      );
 }
