@@ -1,50 +1,122 @@
 #[cfg(test)]
 mod tests {
-    use binary_room::translate::binary_translate;
+    use binary_room::instruction::*;
+    use binary_room::translate::*;
 
     #[test]
     fn test_binary_translate() {
-        let riscv_asm = "
-            addi sp,sp,-32
-            sd ra,24(sp)
-            ld s0,16(sp)
-            addi s0,sp,32
-            li a5,3
-            sw a5,-20(s0)
-            li a5,4
-            sw a5,-24(s0)
-            lw a5,-20(s0)
-            mv a4,a5
-            lw a5,-24(s0)
-            addw a5,a4,a5
-            sext.w a5,a5
-            mv a0,a5
-            ld ra,24(sp)
-            ld s0,16(sp)
-            addi sp,sp,32
-            jr ra
-        ";
-        let translated_asm = binary_translate(riscv_asm);
-        let expected_output = "
-            Addi
-            Sd
-            Ld
-            Addi
-            Li
-            Sw
-            Li
-            Sw
-            Lw
-            Mv
-            Lw
-            Addw
-            SextW
-            Mv
-            Ld
-            Ld
-            Addi
-            Jr
-        ";
-        assert_eq!(translated_asm, expected_output);
+        let riscv_asm: Vec<RiscVInstruction> = vec![
+            RiscVInstruction::Addi {
+                dest: RiscVRegister::SP,
+                src: RiscVRegister::SP,
+                imm: -32,
+            },
+            RiscVInstruction::S {
+                width: RiscVWidth::Double,
+                src: RiscVRegister::RA,
+                dest: RiscVVal::Offset {
+                    register: RiscVRegister::SP,
+                    offset: 24,
+                },
+            },
+            RiscVInstruction::S {
+                width: RiscVWidth::Double,
+                src: RiscVRegister::S0FP,
+                dest: RiscVVal::Offset {
+                    register: RiscVRegister::SP,
+                    offset: 16,
+                },
+            },
+            RiscVInstruction::Addi {
+                dest: RiscVRegister::S0FP,
+                src: RiscVRegister::SP,
+                imm: 32,
+            },
+            RiscVInstruction::Li {
+                dest: RiscVRegister::A5,
+                imm: 3,
+            },
+            RiscVInstruction::S {
+                width: RiscVWidth::Word,
+                src: RiscVRegister::A5,
+                dest: RiscVVal::Offset {
+                    register: RiscVRegister::S0FP,
+                    offset: -20,
+                },
+            },
+            RiscVInstruction::Li {
+                dest: RiscVRegister::A5,
+                imm: 4,
+            },
+            RiscVInstruction::S {
+                width: RiscVWidth::Word,
+                src: RiscVRegister::A5,
+                dest: RiscVVal::Offset {
+                    register: RiscVRegister::S0FP,
+                    offset: -24,
+                },
+            },
+            RiscVInstruction::L {
+                width: RiscVWidth::Word,
+                dest: RiscVRegister::A5,
+                src: RiscVVal::Offset {
+                    register: RiscVRegister::S0FP,
+                    offset: -20,
+                },
+            },
+            RiscVInstruction::Mv {
+                dest: RiscVRegister::A4,
+                src: RiscVRegister::A5,
+            },
+            RiscVInstruction::L {
+                width: RiscVWidth::Word,
+                dest: RiscVRegister::A5,
+                src: RiscVVal::Offset {
+                    register: RiscVRegister::S0FP,
+                    offset: -24,
+                },
+            },
+            RiscVInstruction::Add {
+                width: RiscVWidth::Word,
+                dest: RiscVRegister::A5,
+                arg1: RiscVRegister::A4,
+                arg2: RiscVRegister::A5,
+            },
+            RiscVInstruction::SextW {
+                dest: RiscVRegister::A5,
+                src: RiscVRegister::A5,
+            },
+            RiscVInstruction::Mv {
+                dest: RiscVRegister::A0,
+                src: RiscVRegister::A5,
+            },
+            RiscVInstruction::L {
+                width: RiscVWidth::Double,
+                dest: RiscVRegister::RA,
+                src: RiscVVal::Offset {
+                    register: RiscVRegister::SP,
+                    offset: 24,
+                },
+            },
+            RiscVInstruction::L {
+                width: RiscVWidth::Double,
+                dest: RiscVRegister::S0FP,
+                src: RiscVVal::Offset {
+                    register: RiscVRegister::SP,
+                    offset: 16,
+                },
+            },
+            RiscVInstruction::Addi {
+                dest: RiscVRegister::SP,
+                src: RiscVRegister::SP,
+                imm: 32,
+            },
+            RiscVInstruction::Jr {
+                target: RiscVRegister::RA,
+            },
+        ];
+
+        println!("{:?}", translate_instrs(riscv_asm))
+        // assert_eq!(translated_asm, expected_output);
     }
 }

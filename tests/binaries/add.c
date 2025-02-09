@@ -22,7 +22,7 @@ int main(void) {
 //         sext.w  a5,a5
 //         mv      a0,a5
 //         ld      ra,24(sp)
-//         ld    ß  s0,16(sp)
+//         ld      s0,16(sp)
 //         addi    sp,sp,32
 //         jr      ra
 
@@ -38,4 +38,3 @@ int main(void) {
 //         add     w0, w1, w0
 //         add     sp, sp, 16
 //         ret
-

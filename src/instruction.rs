@@ -207,7 +207,7 @@ pub enum RiscVVal {
     Immediate(i32),
     /// This is for arguments to opcodes which have an offset
     Offset {
-        register: Box<RiscVRegister>,
+        register: RiscVRegister,
         offset: i32,
     },
 }

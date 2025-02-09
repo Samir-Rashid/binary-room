@@ -99,19 +99,73 @@ pub fn translate(riscv_instr: RiscVInstruction) -> ArmInstruction {
 }
 
 fn map_register(riscv_reg: RiscVRegister) -> ArmRegister {
-    todo!()
+    match riscv_reg {
+        RiscVRegister::X0 => todo!("Arm doesn't have a zero register"),
+        // RiscVRegister::RA => ArmRegister::Lr,
+        // RiscVRegister::SP => ArmRegister::Sp,
+        // RiscVRegister::GP => ArmRegister::,
+        // RiscVRegister::TP => ArmRegister::,
+        // RiscVRegister::T0 => ArmRegister::,
+        // RiscVRegister::T1 => ArmRegister::,
+        // RiscVRegister::T2 => ArmRegister::,
+        // RiscVRegister::S0FP => ArmRegister::,
+        // RiscVRegister::S1 => ArmRegister::,
+        // RiscVRegister::A0 => ArmRegister::,
+        // RiscVRegister::A1 => ArmRegister::,
+        // RiscVRegister::A2 => ArmRegister::,
+        // RiscVRegister::A3 => ArmRegister::,
+        // RiscVRegister::A4 => ArmRegister::,
+        // RiscVRegister::A5 => ArmRegister::,
+        // RiscVRegister::A6 => ArmRegister::,
+        // RiscVRegister::A7 => ArmRegister::,
+        // RiscVRegister::S2 => ArmRegister::,
+        // RiscVRegister::S3 => ArmRegister::,
+        // RiscVRegister::S4 => ArmRegister::,
+        // RiscVRegister::S5 => ArmRegister::,
+        // RiscVRegister::S6 => ArmRegister::,
+        // RiscVRegister::S7 => ArmRegister::,
+        // RiscVRegister::S8 => ArmRegister::,
+        // RiscVRegister::S9 => ArmRegister::,
+        // RiscVRegister::S10 => ArmRegister::,
+        // RiscVRegister::S11 => ArmRegister::,
+        // RiscVRegister::T3 => ArmRegister::,
+        // RiscVRegister::T4 => ArmRegister::,
+        // RiscVRegister::T5 => ArmRegister::,
+        // RiscVRegister::T6 => ArmRegister::,
+        // FIXME: do real implementation
+        _ => ArmRegister {
+            width: ArmWidth::Double,
+            name: ArmRegisterName::Sp,
+        },
+    }
 }
 
 fn map_register_name(riscv_reg: RiscVRegister) -> ArmRegisterName {
-    todo!()
+    // todo!()
+        // FIXME: do real implementation
+    ArmRegisterName::A1
 }
 
 fn map_val(riscv_val: RiscVVal) -> ArmVal {
-    todo!()
+    match riscv_val {
+        RiscVVal::RiscVRegister(riscv_reg) => ArmVal::Reg(map_register(riscv_reg)),
+        RiscVVal::Immediate(imm) => ArmVal::Imm(imm),
+        RiscVVal::Offset { register, offset } => ArmVal::RegOffset(map_register(register), offset),
+    }
 }
 
 fn map_width(riscv_width: RiscVWidth) -> ArmWidth {
-    todo!()
+    // todo!()
+        // FIXME: do real implementation
+    ArmWidth::Double
+}
+
+// Translate every instruction 1:1
+pub fn translate_instrs(riscv_instrs: Vec<RiscVInstruction>) -> Vec<ArmInstruction> {
+    riscv_instrs
+        .into_iter()
+        .map(|instr| translate(instr))
+        .collect::<Vec<ArmInstruction>>()
 }
 
 /// Runs binary translation
