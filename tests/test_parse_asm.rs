@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use binary_room::instruction::parse_asm; 
+    use binary_room::instruction::parse_asm;
 
     #[test]
     fn test_parse_asm() {

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use binary_room::translate::binary_translate; 
+    use binary_room::translate::binary_translate;
 
     #[test]
     fn test_binary_translate() {

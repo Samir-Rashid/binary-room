@@ -1,3 +1,5 @@
+use std::default;
+
 /// This file defines all the supported ARM and RISC-V instructions we support.
 /// We use `strum` to assist in serializing asm files to our [`Instruction`] enum.
 ///
@@ -8,6 +10,13 @@
 /// https://github.com/lmcad-unicamp/riscv-sbt/blob/93bd48525362d00c6a2d7b320dc9cd9e62bc8fa9/sbt/Instruction.h#L62
 /// https://github.com/nbdd0121/r2vm/blob/5118be6b9e757c6fef2f019385873f403c23c548/lib/riscv/src/op.rs#L30
 use strum_macros::EnumString;
+
+#[derive(Debug, Default)]
+pub enum RiscVWidth {
+    Word,
+    #[default]
+    Double,
+}
 
 /// RISC-V Instructions
 /// https://msyksphinz-self.github.io/riscv-isadoc/html/rvi.html
@@ -26,30 +35,37 @@ pub enum RiscVInstruction {
         src: RiscVRegister,
         imm: i32,
     },
-    /// Store 64-bit, values from register rs2 to memory.
+    /// add register
+    ///     either add or addw
+    ///     (addw is 32 bits on 64 bit riscv)
     ///
-    /// `M[x[rs1] + sext(offset)] = x[rs2][63:0]`
+    /// `x[rd] = sext((x[rs1] + x[rs2])[31:0])`
+    #[strum(serialize = "addw")]
+    Add {
+        // dest = arg1 + arg2
+        width: RiscVWidth,
+        dest: RiscVRegister,
+        arg1: RiscVRegister,
+        arg2: RiscVRegister,
+    },
+    /// Store values from register rs2 to memory.
+    ///
+    /// `M[x[rs1] + sext(offset)] = x[rs2]`
     #[strum(serialize = "sd")]
-    Sd {
+    S {
+        width: RiscVWidth,
         src: RiscVRegister,
         dest: RiscVVal,
     },
-    /// Loads a 64-bit value from memory into register rd for RV64I.
+    /// Loads a value from memory into register rd for RV64I.
     ///
-    /// `x[rd] = M[x[rs1] + sext(offset)][63:0]`
+    /// `x[rd] = M[x[rs1] + sext(offset)]`
     #[strum(serialize = "ld")]
-    Ld { dest: RiscVRegister, src: RiscVVal },
-    /// Loads a 32-bit value from memory and sign-extends this to XLEN bits
-    /// before storing it in register rd.
-    ///
-    /// `x[rd] = sext(M[x[rs1] + sext(offset)][31:0])`
-    #[strum(serialize = "lw")]
-    Lw { dest: RiscVRegister, src: RiscVVal },
-    /// Store 32-bit, values from the low bits of register rs2 to memory.
-    ///
-    /// `M[x[rs1] + sext(offset)] = x[rs2][31:0]`
-    #[strum(serialize = "sw")]
-    Sw { dest: RiscVRegister, src: RiscVVal },
+    L {
+        width: RiscVWidth,
+        dest: RiscVRegister,
+        src: RiscVVal,
+    },
     // Copy register
     // `mv rd, rs1` expands to `addi rd, rs, 0`
     #[strum(serialize = "mv")]
@@ -57,8 +73,6 @@ pub enum RiscVInstruction {
         dest: RiscVRegister,
         src: RiscVRegister,
     },
-    #[strum(serialize = "addw")]
-    Addw,
     /// Sign extend Word
     ///
     /// psuedo instruction which translates to `addiw rd, rs, 0`
@@ -67,6 +81,13 @@ pub enum RiscVInstruction {
         dest: RiscVRegister,
         src: RiscVRegister,
     },
+    /// Jump Register
+    /// Jump to address and place return address in rd.
+    /// jal rd,offset
+    ///
+    /// Psuedo instruction:
+    ///     jr offset => jal x1, offset
+    ///
     #[strum(serialize = "jr")]
     Jr { target: RiscVRegister },
     /// Load Immediate
@@ -79,7 +100,16 @@ pub enum RiscVInstruction {
     /// semantics.
     /// https://michaeljclark.github.io/asm.html
     #[strum(serialize = "li")]
-    Li { imm: i32 },
+    Li { dest: RiscVRegister, imm: i32 },
+}
+
+impl Default for RiscVInstruction {
+    fn default() -> Self {
+        Self::Li {
+            dest: RiscVRegister::X0,
+            imm: 0,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -87,6 +117,28 @@ pub enum ArmVal {
     Reg(ArmRegister),
     Imm(i32),
     RegOffset(ArmRegister, i32),
+}
+
+impl Default for ArmVal {
+    fn default() -> Self {
+        todo!()
+    }
+}
+
+#[derive(Debug)]
+pub enum ArmWidth {
+    Byte,
+    SignedByte,
+    Half,
+    SignedHalf,
+    Word,
+    Double,
+}
+
+impl Default for ArmWidth {
+    fn default() -> Self {
+        todo!()
+    }
 }
 
 /// ARM Instructions
@@ -111,8 +163,15 @@ pub enum ArmInstruction {
     /// B Branch R15 := address
     #[strum(serialize = "b")]
     B,
+    /// BLR Xn
+    #[strum(serialize = "blr")]
+    Blr { target: ArmRegisterName },
     #[strum(serialize = "ldr")]
-    Ldr,
+    Ldr {
+        width: ArmWidth,
+        dest: ArmRegister,
+        src: ArmVal,
+    },
     #[strum(serialize = "mov")]
     Mov,
     #[strum(serialize = "ret")]
@@ -120,9 +179,10 @@ pub enum ArmInstruction {
     /// Str [r2 + offset] = r1
     #[strum(serialize = "str")]
     Str {
+        width: ArmWidth,
         src: ArmRegister,
-        dst: ArmVal,
-    }
+        dest: ArmVal,
+    },
     /// Sub Sub Rd := Rn - Op2
     #[strum(serialize = "sub")]
     Sub {
@@ -130,11 +190,20 @@ pub enum ArmInstruction {
         arg1: ArmRegister,
         arg2: ArmVal,
     },
+    /// sign extend to word
+    #[strum(serialize = "sxtw")]
+    Sxtw { dest: ArmRegister, src: ArmRegister },
+}
+
+impl Default for ArmInstruction {
+    fn default() -> Self {
+        ArmInstruction::B
+    }
 }
 
 #[derive(Debug)]
 pub enum RiscVVal {
-    RiscVRegister,
+    RiscVRegister(RiscVRegister),
     Immediate(i32),
     /// This is for arguments to opcodes which have an offset
     Offset {
@@ -143,10 +212,17 @@ pub enum RiscVVal {
     },
 }
 
+impl Default for RiscVVal {
+    fn default() -> Self {
+        Self::Immediate(0)
+    }
+}
+
 /// RISC-V Registers
 /// https://msyksphinz-self.github.io/riscv-isadoc/html/regs.html
-#[derive(Debug, EnumString)]
+#[derive(Debug, EnumString, Default)]
 pub enum RiscVRegister {
+    #[default]
     #[strum(serialize = "x0")]
     /// Hard-wired zero
     X0,
@@ -245,10 +321,22 @@ pub enum RiscVRegister {
     T6,
 }
 
+#[derive(Debug)]
+pub struct ArmRegister {
+    pub width: ArmWidth,
+    pub name: ArmRegisterName,
+}
+
+impl Default for ArmRegister {
+    fn default() -> Self {
+        todo!()
+    }
+}
+
 /// ARM Registers
 /// https://developer.arm.com/documentation/dui0056/d/using-the-procedure-call-standard/register-roles-and-names/register-names
 #[derive(Debug, EnumString)]
-pub enum ArmRegister {
+pub enum ArmRegisterName {
     #[strum(serialize = "pc")]
     /// Program counter.
     Pc,
@@ -297,6 +385,14 @@ pub enum ArmRegister {
     #[strum(serialize = "a1")]
     /// Argument/result/scratch register 1.
     A1,
+    #[strum(serialize = "wzr", serialize = "xzr")]
+    Zero,
+}
+
+impl Default for ArmRegisterName {
+    fn default() -> Self {
+        todo!()
+    }
 }
 
 /// Parse a text file into our enum.
@@ -310,7 +406,8 @@ pub fn parse_asm(asm: &str) -> Vec<RiscVInstruction> {
             if parts.is_empty() {
                 None
             } else {
-                RiscVInstruction::from_str(parts[0]).ok()
+                // RiscVInstruction::from_str(parts[0]).ok()
+                todo!()
             }
         })
         .collect()
