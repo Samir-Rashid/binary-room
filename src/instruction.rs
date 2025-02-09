@@ -230,3 +230,20 @@ pub enum ArmRegister {
     /// Argument/result/scratch register 1.
     A1,
 }
+
+/// Parse a text file into our enum.
+pub fn parse_asm(asm: &str) -> Vec<RiscVInstruction> {
+    asm.lines()
+        .filter_map(|line| {
+            // TODO (Samir): Not sure that this will handle assembly labels
+            // We probably need to construct a map for those to find the
+            // original instruction they map to.
+            let parts: Vec<&str> = line.split_whitespace().collect();
+            if parts.is_empty() {
+                None
+            } else {
+                RiscVInstruction::from_str(parts[0]).ok()
+            }
+        })
+        .collect()
+}
