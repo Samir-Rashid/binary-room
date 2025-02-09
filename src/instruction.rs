@@ -82,6 +82,13 @@ pub enum RiscVInstruction {
     Li { imm: i32 },
 }
 
+#[derive(Debug)]
+pub enum ArmVal {
+    Reg(ArmRegister),
+    Imm(i32),
+    RegOffset(ArmRegister, i32),
+}
+
 /// ARM Instructions
 /// `https://iitd-plos.github.io/col718/ref/arm-instructionset.pdf#page=3`
 #[derive(Debug, EnumString)]
@@ -96,7 +103,7 @@ pub enum ArmInstruction {
     Add {
         dest: ArmRegister,
         arg1: ArmRegister,
-        arg2: ArmRegister,
+        arg2: ArmVal,
     },
     /// AND AND Rd := Rn AND Op2
     #[strum(serialize = "and")]
@@ -110,10 +117,19 @@ pub enum ArmInstruction {
     Mov,
     #[strum(serialize = "ret")]
     Ret,
+    /// Str [r2 + offset] = r1
     #[strum(serialize = "str")]
-    Str,
+    Str {
+        src: ArmRegister,
+        dst: ArmVal,
+    }
+    /// Sub Sub Rd := Rn - Op2
     #[strum(serialize = "sub")]
-    Sub,
+    Sub {
+        dest: ArmRegister,
+        arg1: ArmRegister,
+        arg2: ArmVal,
+    },
 }
 
 #[derive(Debug)]

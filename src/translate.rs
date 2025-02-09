@@ -1,11 +1,16 @@
-use crate::instruction::{ArmInstruction, RiscVInstruction, parse_asm};
+use crate::instruction::{parse_asm, ArmInstruction, ArmRegister, ArmVal, RiscVInstruction, RiscVRegister};
 
 /// Run the core logic to match from RISC-V to ARM Instructions.
 
 /// Translate one instruction at a time.
 pub fn translate(riscv_instr: RiscVInstruction) -> ArmInstruction {
     match riscv_instr {
-        RiscVInstruction::Addi => todo!(),
+        RiscVInstruction::Addi {dest, src, imm} => 
+            if imm >= 0 {
+                ArmInstruction::Add { dest: map_register(dest), arg1: map_register(src), arg2: ArmVal::Imm(imm) }
+            } else {
+                ArmInstruction::Sub { dest: map_register(dest), arg1: map_register(src), arg2: ArmVal::Imm(imm) }
+            },
         RiscVInstruction::Sd => todo!(),
         RiscVInstruction::Ld => todo!(),
         RiscVInstruction::Sw => todo!(),
@@ -16,6 +21,10 @@ pub fn translate(riscv_instr: RiscVInstruction) -> ArmInstruction {
         RiscVInstruction::Jr => todo!(),
         RiscVInstruction::Li => todo!(),
     }
+}
+
+fn map_register(riscv_reg: RiscVRegister) -> ArmRegister {
+    todo!()
 }
 
 /// Runs binary translation
