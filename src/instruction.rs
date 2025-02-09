@@ -31,8 +31,8 @@ pub enum RiscVInstruction {
     /// `M[x[rs1] + sext(offset)] = x[rs2][63:0]`
     #[strum(serialize = "sd")]
     Sd {
-        dest: RiscVRegister,
         src: RiscVRegister,
+        dest: RiscVVal,
     },
     /// Loads a 64-bit value from memory into register rd for RV64I.
     ///
