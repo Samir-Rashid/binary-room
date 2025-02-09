@@ -10,38 +10,76 @@
 use strum_macros::EnumString;
 
 /// RISC-V Instructions
+/// https://msyksphinz-self.github.io/riscv-isadoc/html/rvi.html
 ///
 /// To make a function call in RISC-V you use the `jal` (jump and link)
 /// instruction. This would require us ensure that we translate the RISC-V
 /// calling convention into ARM. (`https://riscv.org/wp-content/uploads/2024/12/riscv-calling.pdf)
 #[derive(Debug, EnumString)]
 pub enum RiscVInstruction {
+    /// add immediate
+    ///
+    /// `x[rd] = x[rs1] + sext(immediate)`
     #[strum(serialize = "addi")]
     Addi {
         dest: RiscVRegister,
         src: RiscVRegister,
         imm: i32,
     },
+    /// Store 64-bit, values from register rs2 to memory.
+    ///
+    /// `M[x[rs1] + sext(offset)] = x[rs2][63:0]`
     #[strum(serialize = "sd")]
-    Sd,
+    Sd {
+        dest: RiscVRegister,
+        src: RiscVRegister,
+    },
+    /// Loads a 64-bit value from memory into register rd for RV64I.
+    ///
+    /// `x[rd] = M[x[rs1] + sext(offset)][63:0]`
     #[strum(serialize = "ld")]
-    Ld,
+    Ld { dest: RiscVRegister, src: RiscVVal },
+    /// Loads a 32-bit value from memory and sign-extends this to XLEN bits
+    /// before storing it in register rd.
+    ///
+    /// `x[rd] = sext(M[x[rs1] + sext(offset)][31:0])`
     #[strum(serialize = "lw")]
-    Lw,
+    Lw { dest: RiscVRegister, src: RiscVVal },
+    /// Store 32-bit, values from the low bits of register rs2 to memory.
+    ///
+    /// `M[x[rs1] + sext(offset)] = x[rs2][31:0]`
     #[strum(serialize = "sw")]
-    Sw,
-    #[strum(serialize = "lw")]
-    Lw,
+    Sw { dest: RiscVRegister, src: RiscVVal },
+    // Copy register
+    // `mv rd, rs1` expands to `addi rd, rs, 0`
     #[strum(serialize = "mv")]
-    Mv,
+    Mv {
+        dest: RiscVRegister,
+        src: RiscVRegister,
+    },
     #[strum(serialize = "addw")]
     Addw,
+    /// Sign extend Word
+    ///
+    /// psuedo instruction which translates to `addiw rd, rs, 0`
     #[strum(serialize = "sext.w")]
-    SextW,
+    SextW {
+        dest: RiscVRegister,
+        src: RiscVRegister,
+    },
     #[strum(serialize = "jr")]
-    Jr,
+    Jr { target: RiscVRegister },
+    /// Load Immediate
+    /// This is a pseudo instruction, so it's not a real instruction
+    ///
+    /// Assembler Pseudo-instructions
+    /// The assembler implements a number of convenience psuedo-instructions
+    /// that are formed from instructions in the base ISA, but have implicit
+    /// arguments or in some case reversed arguments, that result in distinct
+    /// semantics.
+    /// https://michaeljclark.github.io/asm.html
     #[strum(serialize = "li")]
-    Li,
+    Li { imm: i32 },
 }
 
 /// ARM Instructions
@@ -66,19 +104,33 @@ pub enum ArmInstruction {
     /// B Branch R15 := address
     #[strum(serialize = "b")]
     B,
+    #[strum(serialize = "ldr")]
+    Ldr,
+    #[strum(serialize = "mov")]
+    Mov,
+    #[strum(serialize = "ret")]
+    Ret,
+    #[strum(serialize = "str")]
+    Str,
+    #[strum(serialize = "sub")]
+    Sub,
+}
+
+#[derive(Debug)]
+pub enum RiscVVal {
+    RiscVRegister,
+    Immediate(i32),
+    /// This is for arguments to opcodes which have an offset
+    Offset {
+        register: Box<RiscVRegister>,
+        offset: i32,
+    },
 }
 
 /// RISC-V Registers
 /// https://msyksphinz-self.github.io/riscv-isadoc/html/regs.html
 #[derive(Debug, EnumString)]
 pub enum RiscVRegister {
-    /// This is for arguments to opcodes which have an offset
-    /// I'm not sure how to make strum happy, so this doesn't auto parse.
-    #[strum(disabled)]
-    Offset {
-        register: Box<RiscVRegister>,
-        offset: usize,
-    },
     #[strum(serialize = "x0")]
     /// Hard-wired zero
     X0,
