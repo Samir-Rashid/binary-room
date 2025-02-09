@@ -1,10 +1,11 @@
 use std::fs;
 use std::str::FromStr;
 mod instruction;
-use instruction::Instruction;
+pub mod translate;
+use instruction::RiscVInstruction;
 
 /// Parse a text file into our enum.
-fn parse_asm(asm: &str) -> Vec<Instruction> {
+fn parse_asm(asm: &str) -> Vec<RiscVInstruction> {
     asm.lines()
         .filter_map(|line| {
             // TODO (Samir): Not sure that this will handle assembly labels
@@ -14,7 +15,7 @@ fn parse_asm(asm: &str) -> Vec<Instruction> {
             if parts.is_empty() {
                 None
             } else {
-                Instruction::from_str(parts[0]).ok()
+                RiscVInstruction::from_str(parts[0]).ok()
             }
         })
         .collect()
