@@ -109,10 +109,43 @@ fn map_register(riscv_reg: RiscVRegister, riscv_width: &RiscVWidth) -> ArmRegist
     }
 }
 
+/// Semantic meaning of registers
+/// https://riscv.org/wp-content/uploads/2024/12/riscv-calling.pdf#page=3
 fn map_register_name(riscv_reg: RiscVRegister) -> ArmRegisterName {
-    // todo!()
-        // FIXME: do real implementation
-    ArmRegisterName::A1
+    match riscv_reg {
+        RiscVRegister::X0 => ArmRegisterName::Zero,
+        RiscVRegister::RA => ArmRegisterName::Lr,
+        RiscVRegister::SP => ArmRegisterName::Sp,
+        RiscVRegister::GP => ArmRegisterName::X0,
+        RiscVRegister::TP => ArmRegisterName::X1,
+        RiscVRegister::T0 => ArmRegisterName::X2,
+        RiscVRegister::T1 => ArmRegisterName::X3,
+        RiscVRegister::T2 => ArmRegisterName::X4,
+        RiscVRegister::S0FP => ArmRegisterName::X5,
+        RiscVRegister::S1 => ArmRegisterName::X6,
+        RiscVRegister::A0 => ArmRegisterName::X7,
+        RiscVRegister::A1 => ArmRegisterName::X8,
+        RiscVRegister::A2 => ArmRegisterName::X9,
+        RiscVRegister::A3 => ArmRegisterName::X10,
+        RiscVRegister::A4 => ArmRegisterName::X11,
+        RiscVRegister::A5 => ArmRegisterName::X12,
+        RiscVRegister::A6 => ArmRegisterName::X13,
+        RiscVRegister::A7 => ArmRegisterName::X14,
+        RiscVRegister::S2 => ArmRegisterName::X15,
+        RiscVRegister::S3 => ArmRegisterName::X16,
+        RiscVRegister::S4 => ArmRegisterName::X17,
+        RiscVRegister::S5 => ArmRegisterName::X18,
+        RiscVRegister::S6 => ArmRegisterName::X19,
+        RiscVRegister::S7 => ArmRegisterName::X20,
+        RiscVRegister::S8 => ArmRegisterName::X21,
+        RiscVRegister::S9 => ArmRegisterName::X22,
+        RiscVRegister::S10 => ArmRegisterName::X23,
+        RiscVRegister::S11 => ArmRegisterName::X24,
+        RiscVRegister::T3 => ArmRegisterName::X25,
+        RiscVRegister::T4 => ArmRegisterName::X26,
+        RiscVRegister::T5 => ArmRegisterName::X27,
+        RiscVRegister::T6 => ArmRegisterName::X28,
+    }
 }
 
 fn map_val(riscv_val: RiscVVal, riscv_width: &RiscVWidth) -> ArmVal {

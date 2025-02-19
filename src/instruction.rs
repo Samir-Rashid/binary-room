@@ -248,7 +248,7 @@ pub enum RiscVRegister {
     /// Temporaries
     T2,
     #[strum(serialize = "s0", serialize = "fp")]
-    /// Saved register/frame pointer
+    /// Saved register/frame pointer R29
     S0FP,
     #[strum(serialize = "s1")]
     /// Saved registers
@@ -335,58 +335,60 @@ impl Default for ArmRegister {
 
 /// ARM Registers
 /// https://developer.arm.com/documentation/dui0056/d/using-the-procedure-call-standard/register-roles-and-names/register-names
+/// Image of instructions https://duetorun.com/blog/arm/images/AArch64-registers.png
+///   - https://duetorun.com/blog/20230601/a64-regs/#user_program_registers
 #[derive(Debug, EnumString)]
 pub enum ArmRegisterName {
-    #[strum(serialize = "pc")]
-    /// Program counter.
-    Pc,
-    #[strum(serialize = "lr")]
-    /// Link register.
-    Lr,
-    #[strum(serialize = "sp")]
-    /// Stack pointer.
-    Sp,
-    #[strum(serialize = "ip")]
-    /// Intra-procedure-call scratch register.
-    Ip,
-    #[strum(serialize = "v8")]
-    /// ARM-state variable register 8.
-    V8,
-    #[strum(serialize = "sl")]
-    /// ARM-state variable register 7. Stack limit pointer in stack-checked variants.
-    Sl,
-    #[strum(serialize = "sb")]
-    /// ARM-state variable register 6. Static base in RWPI variants.
-    Sb,
-    #[strum(serialize = "v5")]
-    /// ARM-state variable register 5.
-    V5,
-    #[strum(serialize = "v4")]
-    /// Variable register 4.
-    V4,
-    #[strum(serialize = "v3")]
-    /// Variable register 3.
-    V3,
-    #[strum(serialize = "v2")]
-    /// Variable register 2.
-    V2,
-    #[strum(serialize = "v1")]
-    /// Variable register 1.
-    V1,
-    #[strum(serialize = "a4")]
-    /// Argument/result/scratch register 4.
-    A4,
-    #[strum(serialize = "a3")]
-    /// Argument/result/scratch register 3.
-    A3,
-    #[strum(serialize = "a2")]
-    /// Argument/result/scratch register 2.
-    A2,
-    #[strum(serialize = "a1")]
-    /// Argument/result/scratch register 1.
-    A1,
     #[strum(serialize = "wzr", serialize = "xzr")]
+    /// Zero register. Hardware special.
     Zero,
+    #[strum(serialize = "pc")]
+    /// Program counter. Hardware special register.
+    Pc,
+    #[strum(serialize = "sp")]
+    /// Stack pointer. Hardware special register.
+    Sp,
+    #[strum(serialize = "lr")]
+    /// Link register. X30. Hardware special register.
+    Lr,
+    // Parameter passing and/or scratch registers (volatile)
+    X0,
+    X1,
+    X2,
+    X3,
+    X4,
+    X5,
+    X6,
+    X7,
+    // Caller-Saved scratch registers (volatile)
+    /// XR
+    X8,
+    X9,
+    X10,
+    X11,
+    X12,
+    X13,
+    X14,
+    X15,
+    /// IP0
+    X16,
+    /// IP1
+    X17,
+    /// PR
+    X18,
+    // Caller-Saved registers (non-volatile)
+    X19,
+    X20,
+    X21,
+    X22,
+    X23,
+    X24,
+    X25,
+    X26,
+    X27,
+    X28,
+    /// FP
+    X29,
 }
 
 impl Default for ArmRegisterName {
