@@ -116,7 +116,12 @@ mod tests {
             },
         ];
 
-        println!("{:?}", translate_instrs(riscv_asm))
+        let arm_instrs = translate_instrs(riscv_asm);
+        println!("{:?}", arm_instrs);
         // assert_eq!(translated_asm, expected_output);
+        for instr in arm_instrs {
+            let x: String = instr.into();
+            println!("{}", x);
+        }
     }
 }
