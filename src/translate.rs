@@ -155,9 +155,11 @@ fn map_val(riscv_val: RiscVVal) -> ArmVal {
 }
 
 fn map_width(riscv_width: RiscVWidth) -> ArmWidth {
-    // todo!()
-        // FIXME: do real implementation
-    ArmWidth::Double
+    match riscv_width {
+        RiscVWidth::Word => ArmWidth::Word,
+        RiscVWidth::Double => ArmWidth::Double,
+        // todo!()
+    }
 }
 
 // Translate every instruction 1:1
