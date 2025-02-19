@@ -17,34 +17,38 @@ macro_rules! sorry {
 pub fn translate(riscv_instr: RiscVInstruction) -> ArmInstruction {
     match riscv_instr {
         RiscVInstruction::Addi { dest, src, imm } => {
+            let width = RiscVWidth::Word;
             if imm >= 0 {
                 ArmInstruction::Add {
-                    dest: map_register(dest),
-                    arg1: map_register(src),
+                    dest: map_register(dest, width),
+                    arg1: map_register(src, width),
                     arg2: ArmVal::Imm(imm),
                 }
             } else {
                 ArmInstruction::Sub {
-                    dest: map_register(dest),
-                    arg1: map_register(src),
+                    dest: map_register(dest, width),
+                    arg1: map_register(src, width),
                     arg2: ArmVal::Imm(imm),
                 }
             }
         }
         RiscVInstruction::S { width, src, dest } => ArmInstruction::Str {
             width: map_width(width),
-            src: map_register(src),
-            dest: map_val(dest),
+            src: map_register(src, width),
+            dest: map_val(dest, width),
         },
         RiscVInstruction::L { width, dest, src } => ArmInstruction::Ldr {
             width: map_width(width),
-            dest: map_register(dest),
-            src: map_val(src),
+            dest: map_register(dest, width),
+            src: map_val(src, width),
         },
-        RiscVInstruction::Mv { dest, src } => ArmInstruction::Add {
-            dest: map_register(dest),
-            arg1: map_register(src),
-            arg2: ArmVal::Imm(0),
+        RiscVInstruction::Mv { dest, src } =>  {
+            let width = RiscVWidth::Double;
+            ArmInstruction::Add {
+                dest: map_register(dest, width),
+                arg1: map_register(src, width),
+                arg2: ArmVal::Imm(0),
+            }
         },
         RiscVInstruction::Add {
             width,
@@ -87,7 +91,7 @@ pub fn translate(riscv_instr: RiscVInstruction) -> ArmInstruction {
             }
 
             ArmInstruction::Add {
-                dest: map_register(dest),
+                dest: map_register(dest, RiscVWidth::Double),
                 arg1: ArmRegister {
                     width: ArmWidth::Double,
                     name: ArmRegisterName::Zero,
@@ -111,11 +115,11 @@ fn map_register_name(riscv_reg: RiscVRegister) -> ArmRegisterName {
     ArmRegisterName::A1
 }
 
-fn map_val(riscv_val: RiscVVal) -> ArmVal {
+fn map_val(riscv_val: RiscVVal, riscv_width: RiscVWidth) -> ArmVal {
     match riscv_val {
-        RiscVVal::RiscVRegister(riscv_reg) => ArmVal::Reg(map_register(riscv_reg)),
+        RiscVVal::RiscVRegister(riscv_reg) => ArmVal::Reg(map_register(riscv_reg, riscv_width)),
         RiscVVal::Immediate(imm) => ArmVal::Imm(imm),
-        RiscVVal::Offset { register, offset } => ArmVal::RegOffset(map_register(register), offset),
+        RiscVVal::Offset { register, offset } => ArmVal::RegOffset(map_register(register, riscv_width), offset),
     }
 }
 
