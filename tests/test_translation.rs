@@ -2,6 +2,8 @@
 mod tests {
     use binary_room::instruction::*;
     use binary_room::translate::*;
+    use binary_room::utils;
+    use binary_room::utils::translate_to_file;
 
     #[test]
     fn test_binary_translate() {
@@ -116,12 +118,8 @@ mod tests {
             },
         ];
 
-        let arm_instrs = translate_instrs(riscv_asm);
-        println!("{:?}", arm_instrs);
-        // assert_eq!(translated_asm, expected_output);
-        for instr in arm_instrs {
-            let x: String = instr.into();
-            println!("{}", x);
-        }
+        translate_to_file(riscv_asm, "test_binary_translate_add.S".to_string());
+
+
     }
 }

@@ -2,6 +2,7 @@ use std::fs;
 use std::str::FromStr;
 pub mod instruction;
 pub mod translate;
+pub mod utils;
 use instruction::RiscVInstruction;
 use translate::binary_translate;
 
