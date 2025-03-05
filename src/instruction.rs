@@ -75,6 +75,13 @@ pub enum RiscVInstruction {
         dest: RiscVRegister,
         src: RiscVRegister,
     },
+    // Copy immediate
+    // `mv rd, rs1` expands to `addi rd, rs, 0`
+    #[strum(serialize = "mvi")]
+    Mvi {
+        dest: RiscVRegister,
+        imm: i32,
+    },
     /// Sign extend Word
     ///
     /// psuedo instruction which translates to `addiw rd, rs, 0`
@@ -175,7 +182,11 @@ pub enum ArmInstruction {
         src: ArmVal,
     },
     #[strum(serialize = "mov")]
-    Mov,
+    Mov {
+        width: ArmWidth,
+        dest: ArmRegister,
+        src: ArmVal
+    },
     #[strum(serialize = "ret")]
     Ret,
     /// Str [r2 + offset] = r1
@@ -435,7 +446,9 @@ impl Into<String> for ArmInstruction {
                     _ => todo!()
                 }
             },
-            ArmInstruction::Mov => todo!(),
+            ArmInstruction::Mov { width, dest, src } => {
+                format!("mov {}, {}", dest, src)
+            },
             ArmInstruction::Ret => todo!(),
             ArmInstruction::Str { width, src, dest } => {
                 match width {
@@ -468,7 +481,9 @@ impl Into<String> for ArmRegister {
             (ArmRegisterName::Pc, ArmWidth::SignedHalf) => todo!(),
             (ArmRegisterName::Pc, ArmWidth::Word) => todo!(),
             (ArmRegisterName::Pc, ArmWidth::Double) => todo!(),
-            (ArmRegisterName::Sp, _) => "sp",
+            (ArmRegisterName::Sp, ArmWidth::Word) => "wsp",
+            (ArmRegisterName::Sp, ArmWidth::Double) => "sp",
+            (ArmRegisterName::Sp, _) => todo!(),
             (ArmRegisterName::Lr, ArmWidth::Byte) => todo!(),
             (ArmRegisterName::Lr, ArmWidth::SignedByte) => todo!(),
             (ArmRegisterName::Lr, ArmWidth::Half) => todo!(),
@@ -479,8 +494,8 @@ impl Into<String> for ArmRegister {
             (ArmRegisterName::X0, ArmWidth::SignedByte) => todo!(),
             (ArmRegisterName::X0, ArmWidth::Half) => todo!(),
             (ArmRegisterName::X0, ArmWidth::SignedHalf) => todo!(),
-            (ArmRegisterName::X0, ArmWidth::Word) => todo!(),
-            (ArmRegisterName::X0, ArmWidth::Double) => todo!(),
+            (ArmRegisterName::X0, ArmWidth::Word) => "w0",
+            (ArmRegisterName::X0, ArmWidth::Double) => "x0",
             (ArmRegisterName::X1, ArmWidth::Byte) => todo!(),
             (ArmRegisterName::X1, ArmWidth::SignedByte) => todo!(),
             (ArmRegisterName::X1, ArmWidth::Half) => todo!(),
@@ -653,8 +668,8 @@ impl Into<String> for ArmRegister {
             (ArmRegisterName::X29, ArmWidth::SignedByte) => todo!(),
             (ArmRegisterName::X29, ArmWidth::Half) => todo!(),
             (ArmRegisterName::X29, ArmWidth::SignedHalf) => todo!(),
-            (ArmRegisterName::X29, ArmWidth::Word) => todo!(),
-            (ArmRegisterName::X29, ArmWidth::Double) => todo!(),
+            (ArmRegisterName::X29, ArmWidth::Word) => "w29",
+            (ArmRegisterName::X29, ArmWidth::Double) => "x29",
         };
         s.to_string()
     }
@@ -675,7 +690,11 @@ impl Display for ArmVal {
             ArmVal::Reg(arm_register) => arm_register.fmt(f),
             ArmVal::Imm(x) => write!(f, "{}", x),
             ArmVal::RegOffset(arm_register, offset) => {
-                write!(f, "[{}, {}]", arm_register, offset)
+                let double_reg = ArmRegister {
+                    name: arm_register.name,
+                    width: ArmWidth::Double
+                };
+                write!(f, "[{}, {}]", double_reg, offset)
             },
         }
     }

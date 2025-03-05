@@ -17,7 +17,11 @@ macro_rules! sorry {
 pub fn translate(riscv_instr: RiscVInstruction) -> ArmInstruction {
     match riscv_instr {
         RiscVInstruction::Addi { dest, src, imm } => {
-            let width = RiscVWidth::Word;
+            if let RiscVRegister::X0 = src {
+                return translate(RiscVInstruction::Mvi { dest, imm });
+            }
+
+            let width = RiscVWidth::Double;
             if imm >= 0 {
                 ArmInstruction::Add {
                     dest: map_register(dest, &width),
@@ -28,7 +32,7 @@ pub fn translate(riscv_instr: RiscVInstruction) -> ArmInstruction {
                 ArmInstruction::Sub {
                     dest: map_register(dest, &width),
                     arg1: map_register(src, &width),
-                    arg2: ArmVal::Imm(imm),
+                    arg2: ArmVal::Imm(imm.abs()),
                 }
             }
         }
@@ -48,6 +52,14 @@ pub fn translate(riscv_instr: RiscVInstruction) -> ArmInstruction {
                 dest: map_register(dest, &width),
                 arg1: map_register(src, &width),
                 arg2: ArmVal::Imm(0),
+            }
+        },
+        RiscVInstruction::Mvi { dest, imm } =>  {
+            let width = RiscVWidth::Double;
+            ArmInstruction::Mov {
+                width: map_width(&width),
+                dest: map_register(dest, &width),
+                src: ArmVal::Imm(imm)
             }
         },
         RiscVInstruction::Add {
@@ -90,14 +102,20 @@ pub fn translate(riscv_instr: RiscVInstruction) -> ArmInstruction {
                 panic!("Li with imm out of range");
             }
 
-            ArmInstruction::Add {
-                dest: map_register(dest, &RiscVWidth::Double),
-                arg1: ArmRegister {
-                    width: ArmWidth::Double,
-                    name: ArmRegisterName::Zero,
-                },
-                arg2: ArmVal::Imm(imm),
+            let width = RiscVWidth::Double;
+            ArmInstruction::Mov { 
+                width: map_width(&width), 
+                dest: map_register(dest, &width), 
+                src: ArmVal::Imm(imm)
             }
+            // ArmInstruction::Add {
+            //     dest: map_register(dest, &RiscVWidth::Double),
+            //     arg1: ArmRegister {
+            //         width: ArmWidth::Double,
+            //         name: ArmRegisterName::Zero,
+            //     },
+            //     arg2: ArmVal::Imm(imm),
+            // }
         }
     }
 }
@@ -121,9 +139,9 @@ fn map_register_name(riscv_reg: RiscVRegister) -> ArmRegisterName {
         RiscVRegister::T0 => ArmRegisterName::X2,
         RiscVRegister::T1 => ArmRegisterName::X3,
         RiscVRegister::T2 => ArmRegisterName::X4,
-        RiscVRegister::S0FP => ArmRegisterName::X5,
+        // skipped X5
         RiscVRegister::S1 => ArmRegisterName::X6,
-        RiscVRegister::A0 => ArmRegisterName::X7,
+        RiscVRegister::A0 => ArmRegisterName::X0,
         RiscVRegister::A1 => ArmRegisterName::X8,
         RiscVRegister::A2 => ArmRegisterName::X9,
         RiscVRegister::A3 => ArmRegisterName::X10,
@@ -145,6 +163,7 @@ fn map_register_name(riscv_reg: RiscVRegister) -> ArmRegisterName {
         RiscVRegister::T4 => ArmRegisterName::X26,
         RiscVRegister::T5 => ArmRegisterName::X27,
         RiscVRegister::T6 => ArmRegisterName::X28,
+        RiscVRegister::S0FP => ArmRegisterName::X29,
     }
 }
 
