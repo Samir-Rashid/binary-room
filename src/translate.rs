@@ -46,22 +46,27 @@ pub fn translate(riscv_instr: RiscVInstruction) -> ArmInstruction {
             dest: map_register(dest, &width),
             src: map_val(src, &width),
         },
-        RiscVInstruction::Mv { dest, src } =>  {
+        RiscVInstruction::Directive { name, operands } => {
+            let arm_operands = operands.replace("@", "%");
+            ArmInstruction::Directive { name, operands: arm_operands }
+        }
+        RiscVInstruction::Label { name } => ArmInstruction::Label { name },
+        RiscVInstruction::Mv { dest, src } => {
             let width = RiscVWidth::Double;
             ArmInstruction::Add {
                 dest: map_register(dest, &width),
                 arg1: map_register(src, &width),
                 arg2: ArmVal::Imm(0),
             }
-        },
-        RiscVInstruction::Mvi { dest, imm } =>  {
+        }
+        RiscVInstruction::Mvi { dest, imm } => {
             let width = RiscVWidth::Double;
             ArmInstruction::Mov {
                 width: map_width(&width),
                 dest: map_register(dest, &width),
-                src: ArmVal::Imm(imm)
+                src: ArmVal::Imm(imm),
             }
-        },
+        }
         RiscVInstruction::Add {
             width,
             dest,
@@ -103,10 +108,10 @@ pub fn translate(riscv_instr: RiscVInstruction) -> ArmInstruction {
             }
 
             let width = RiscVWidth::Double;
-            ArmInstruction::Mov { 
-                width: map_width(&width), 
-                dest: map_register(dest, &width), 
-                src: ArmVal::Imm(imm)
+            ArmInstruction::Mov {
+                width: map_width(&width),
+                dest: map_register(dest, &width),
+                src: ArmVal::Imm(imm),
             }
             // ArmInstruction::Add {
             //     dest: map_register(dest, &RiscVWidth::Double),
@@ -116,6 +121,28 @@ pub fn translate(riscv_instr: RiscVInstruction) -> ArmInstruction {
             //     },
             //     arg2: ArmVal::Imm(imm),
             // }
+        },
+        RiscVInstruction::Addl { dest, src, label } => {
+            let width = RiscVWidth::Double;
+            ArmInstruction::Add {
+                dest: map_register(dest, &width),
+                arg1: map_register(src, &width),
+                arg2: map_val(label, &width),
+            }
+        },
+        RiscVInstruction::Lui { dest, src } => {
+            // only used to load upper bits or adrp in arm
+            let width = RiscVWidth::Double;
+            ArmInstruction::Adrp {
+                dest: map_register(dest, &width),
+                label: map_val(src, &width),
+            }
+        },
+        RiscVInstruction::Call { label } => {
+            let width = RiscVWidth::Double;
+            ArmInstruction::Bl {
+                target: map_val(label, &width),
+            }
         }
     }
 }
@@ -123,7 +150,7 @@ pub fn translate(riscv_instr: RiscVInstruction) -> ArmInstruction {
 fn map_register(riscv_reg: RiscVRegister, riscv_width: &RiscVWidth) -> ArmRegister {
     ArmRegister {
         width: map_width(riscv_width),
-        name: map_register_name(riscv_reg)
+        name: map_register_name(riscv_reg),
     }
 }
 
@@ -142,13 +169,13 @@ fn map_register_name(riscv_reg: RiscVRegister) -> ArmRegisterName {
         // skipped X5
         RiscVRegister::S1 => ArmRegisterName::X6,
         RiscVRegister::A0 => ArmRegisterName::X0,
-        RiscVRegister::A1 => ArmRegisterName::X8,
-        RiscVRegister::A2 => ArmRegisterName::X9,
-        RiscVRegister::A3 => ArmRegisterName::X10,
-        RiscVRegister::A4 => ArmRegisterName::X11,
-        RiscVRegister::A5 => ArmRegisterName::X12,
-        RiscVRegister::A6 => ArmRegisterName::X13,
-        RiscVRegister::A7 => ArmRegisterName::X14,
+        RiscVRegister::A1 => ArmRegisterName::X1,
+        RiscVRegister::A2 => ArmRegisterName::X2,
+        RiscVRegister::A3 => ArmRegisterName::X3,
+        RiscVRegister::A4 => ArmRegisterName::X4,
+        RiscVRegister::A5 => ArmRegisterName::X5,
+        RiscVRegister::A6 => ArmRegisterName::X6,
+        RiscVRegister::A7 => ArmRegisterName::X7,
         RiscVRegister::S2 => ArmRegisterName::X15,
         RiscVRegister::S3 => ArmRegisterName::X16,
         RiscVRegister::S4 => ArmRegisterName::X17,
@@ -172,15 +199,16 @@ fn map_val(riscv_val: RiscVVal, riscv_width: &RiscVWidth) -> ArmVal {
         RiscVVal::RiscVRegister(riscv_reg) => ArmVal::Reg(map_register(riscv_reg, riscv_width)),
         RiscVVal::Immediate(imm) => ArmVal::Imm(imm),
         RiscVVal::Offset { register, offset } => ArmVal::RegOffset(map_register(register, riscv_width), offset),
+        RiscVVal::LabelOffset { label, offset } => ArmVal::LabelOffset(label, offset),
     }
 }
 
 fn map_width(riscv_width: &RiscVWidth) -> ArmWidth {
     // todo!()
-        // FIXME: do real implementation
+    // FIXME: do real implementation
     match riscv_width {
         RiscVWidth::Double => ArmWidth::Double,
-        RiscVWidth::Word => ArmWidth::Word
+        RiscVWidth::Word => ArmWidth::Word,
     }
 }
 

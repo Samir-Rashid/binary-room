@@ -1,6 +1,6 @@
 use std::convert::Into;
 use std::default;
-use std::fmt::{write, Display};
+use std::fmt::{format, write, Display};
 
 /// This file defines all the supported ARM and RISC-V instructions we support.
 /// We use `strum` to assist in serializing asm files to our [`Instruction`] enum.
@@ -37,6 +37,12 @@ pub enum RiscVInstruction {
         src: RiscVRegister,
         imm: i32,
     },
+    /// add label/offset addr (not a real RISC-V instr)
+    Addl {
+        dest: RiscVRegister,
+        src: RiscVRegister,
+        label: RiscVVal
+    },
     /// add register
     ///     either add or addw
     ///     (addw is 32 bits on 64 bit riscv)
@@ -49,6 +55,11 @@ pub enum RiscVInstruction {
         dest: RiscVRegister,
         arg1: RiscVRegister,
         arg2: RiscVRegister,
+    },
+    /// call label
+    #[strum(serialize = "call")]
+    Call {
+        label: RiscVVal
     },
     /// Store values from register rs2 to memory.
     ///
@@ -67,6 +78,18 @@ pub enum RiscVInstruction {
         width: RiscVWidth,
         dest: RiscVRegister,
         src: RiscVVal,
+    },
+    Directive {
+        name: String,
+        operands: String
+    },
+    Label {
+        name: String
+    },
+    #[strum(serialize = "lui")]
+    Lui {
+        dest: RiscVRegister,
+        src: RiscVVal
     },
     // Copy register
     // `mv rd, rs1` expands to `addi rd, rs, 0`
@@ -126,6 +149,7 @@ pub enum ArmVal {
     Reg(ArmRegister),
     Imm(i32),
     RegOffset(ArmRegister, i32),
+    LabelOffset(String, i32)
 }
 
 impl Default for ArmVal {
@@ -169,12 +193,28 @@ pub enum ArmInstruction {
     /// AND AND Rd := Rn AND Op2
     #[strum(serialize = "and")]
     And,
+    /// ADRP Rd := page_addr(label)
+    #[strum(serialize = "adrp")]
+    Adrp {
+        dest: ArmRegister,
+        label: ArmVal
+    },
     /// B Branch R15 := address
     #[strum(serialize = "b")]
     B,
     /// BLR Xn
     #[strum(serialize = "blr")]
     Blr { target: ArmRegisterName },
+    /// BL label
+    #[strum(serialize = "bl")]
+    Bl {target: ArmVal},
+    /// label:
+    Label { name: String },
+    /// .directive operands
+    Directive {
+        name: String, 
+        operands: String
+    },
     #[strum(serialize = "ldr")]
     Ldr {
         width: ArmWidth,
@@ -223,6 +263,10 @@ pub enum RiscVVal {
         register: RiscVRegister,
         offset: i32,
     },
+    LabelOffset {
+        label: String,
+        offset: i32
+    }
 }
 
 impl Default for RiscVVal {
@@ -436,6 +480,9 @@ impl Into<String> for ArmInstruction {
                 format!("add {}, {}, {}", dest, arg1, arg2)
             },
             ArmInstruction::And => todo!(),
+            ArmInstruction::Adrp { dest, label } => {
+                format!("adrp {}, {}", dest, label)
+            }
             ArmInstruction::B => todo!(),
             ArmInstruction::Blr { target } => {
                 format!("blr {}", Into::<ArmRegister>::into(target))
@@ -464,6 +511,15 @@ impl Into<String> for ArmInstruction {
             ArmInstruction::Sxtw { dest, src } => {
                 format!("sxtw {}, {}", dest, src)
             },
+            ArmInstruction::Bl { target } => {
+                format!("bl {}", target)
+            },
+            ArmInstruction::Label { name } => {
+                format!("{}:", name)
+            },
+            ArmInstruction::Directive { name, operands } => {
+                format!(".{} {}", name, operands)
+            }
         }
     }
 }
@@ -500,26 +556,26 @@ impl Into<String> for ArmRegister {
             (ArmRegisterName::X1, ArmWidth::SignedByte) => todo!(),
             (ArmRegisterName::X1, ArmWidth::Half) => todo!(),
             (ArmRegisterName::X1, ArmWidth::SignedHalf) => todo!(),
-            (ArmRegisterName::X1, ArmWidth::Word) => todo!(),
-            (ArmRegisterName::X1, ArmWidth::Double) => todo!(),
+            (ArmRegisterName::X1, ArmWidth::Word) => "w1",
+            (ArmRegisterName::X1, ArmWidth::Double) => "x1",
             (ArmRegisterName::X2, ArmWidth::Byte) => todo!(),
             (ArmRegisterName::X2, ArmWidth::SignedByte) => todo!(),
             (ArmRegisterName::X2, ArmWidth::Half) => todo!(),
             (ArmRegisterName::X2, ArmWidth::SignedHalf) => todo!(),
-            (ArmRegisterName::X2, ArmWidth::Word) => todo!(),
-            (ArmRegisterName::X2, ArmWidth::Double) => todo!(),
+            (ArmRegisterName::X2, ArmWidth::Word) => "w2",
+            (ArmRegisterName::X2, ArmWidth::Double) => "x2",
             (ArmRegisterName::X3, ArmWidth::Byte) => todo!(),
             (ArmRegisterName::X3, ArmWidth::SignedByte) => todo!(),
             (ArmRegisterName::X3, ArmWidth::Half) => todo!(),
             (ArmRegisterName::X3, ArmWidth::SignedHalf) => todo!(),
-            (ArmRegisterName::X3, ArmWidth::Word) => todo!(),
-            (ArmRegisterName::X3, ArmWidth::Double) => todo!(),
+            (ArmRegisterName::X3, ArmWidth::Word) => "w3",
+            (ArmRegisterName::X3, ArmWidth::Double) => "x3",
             (ArmRegisterName::X4, ArmWidth::Byte) => todo!(),
             (ArmRegisterName::X4, ArmWidth::SignedByte) => todo!(),
             (ArmRegisterName::X4, ArmWidth::Half) => todo!(),
             (ArmRegisterName::X4, ArmWidth::SignedHalf) => todo!(),
-            (ArmRegisterName::X4, ArmWidth::Word) => todo!(),
-            (ArmRegisterName::X4, ArmWidth::Double) => todo!(),
+            (ArmRegisterName::X4, ArmWidth::Word) => "w4",
+            (ArmRegisterName::X4, ArmWidth::Double) => "x4",
             (ArmRegisterName::X5, ArmWidth::Byte) => todo!(),
             (ArmRegisterName::X5, ArmWidth::SignedByte) => todo!(),
             (ArmRegisterName::X5, ArmWidth::Half) => todo!(),
@@ -696,6 +752,14 @@ impl Display for ArmVal {
                 };
                 write!(f, "[{}, {}]", double_reg, offset)
             },
+            ArmVal::LabelOffset(name, offset) => {
+                match offset {
+                    0 => write!(f, "{}", name),
+                    9998 => write!(f, "{}", name), // %hi in riscv is adrp with no offset in arm
+                    9999 => write!(f, ":lo12:{}", name), // reserved for 12 low bits of label addr
+                    _ => write!(f, "[{}, {}]", name, offset)
+                }
+            }
         }
     }
 }
