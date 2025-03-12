@@ -56,6 +56,13 @@ pub enum RiscVInstruction {
         arg1: RiscVRegister,
         arg2: RiscVRegister,
     },
+    /// branch if less than or equal
+    #[strum(serialize = "call")]
+    Ble {
+        arg1: RiscVRegister,
+        arg2: RiscVRegister,
+        target: RiscVVal
+    },
     /// call label
     #[strum(serialize = "call")]
     Call {
@@ -113,6 +120,9 @@ pub enum RiscVInstruction {
         dest: RiscVRegister,
         src: RiscVRegister,
     },
+    /// Jump label
+    #[strum(serialize = "j")]
+    J { target: RiscVVal },
     /// Jump Register
     /// Jump to address and place return address in rd.
     /// jal rd,offset
@@ -201,10 +211,13 @@ pub enum ArmInstruction {
     },
     /// B Branch R15 := address
     #[strum(serialize = "b")]
-    B,
+    B { target: ArmVal },
     /// BLR Xn
     #[strum(serialize = "blr")]
     Blr { target: ArmRegisterName },
+    /// BLE label
+    #[strum(serialize = "ble")]
+    Ble { arg1: ArmRegister, arg2: ArmRegister, target: ArmVal },
     /// BL label
     #[strum(serialize = "bl")]
     Bl {target: ArmVal},
@@ -250,7 +263,11 @@ pub enum ArmInstruction {
 
 impl Default for ArmInstruction {
     fn default() -> Self {
-        ArmInstruction::B
+        ArmInstruction::Mov {
+            width: ArmWidth::Double, 
+            dest: ArmRegister { width: ArmWidth::Double, name: ArmRegisterName::X0 },
+            src: ArmVal::Reg(ArmRegister { width: ArmWidth::Double, name: ArmRegisterName::X0 })
+        }
     }
 }
 
@@ -483,7 +500,12 @@ impl Into<String> for ArmInstruction {
             ArmInstruction::Adrp { dest, label } => {
                 format!("adrp {}, {}", dest, label)
             }
-            ArmInstruction::B => todo!(),
+            ArmInstruction::B { target } => {
+                format!("b {}", target)
+            },
+            ArmInstruction::Ble { arg1, arg2, target } => {
+                format!("cmp {}, {}\n blt {}", arg1, arg2, target)
+            },
             ArmInstruction::Blr { target } => {
                 format!("blr {}", Into::<ArmRegister>::into(target))
             },

@@ -35,7 +35,18 @@ pub fn translate(riscv_instr: RiscVInstruction) -> ArmInstruction {
                     arg2: ArmVal::Imm(imm.abs()),
                 }
             }
-        }
+        },
+        RiscVInstruction::Ble { arg1, arg2, target } => {
+            let width = RiscVWidth::Double;
+            ArmInstruction::Ble {
+                arg1: map_register(arg1, &width),
+                arg2: map_register(arg2, &width),
+                target: map_val(target, &width)
+            }
+        },
+        RiscVInstruction::J { target } => ArmInstruction::B {
+            target: map_val(target, &RiscVWidth::Double)
+        },
         RiscVInstruction::S { width, src, dest } => ArmInstruction::Str {
             width: map_width(&width),
             src: map_register(src, &width),
