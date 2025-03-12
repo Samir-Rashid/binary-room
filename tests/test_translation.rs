@@ -4,10 +4,12 @@ mod tests {
     use binary_room::translate::*;
     use binary_room::utils;
     use binary_room::utils::translate_to_file;
+    use binary_room::utils::START;
 
     #[test]
     fn test_binary_translate() {
         let riscv_asm: Vec<RiscVInstruction> = vec![
+            RiscVInstruction::Verbatim { text: START.to_string() },
             RiscVInstruction::Addi {
                 dest: RiscVRegister::SP,
                 src: RiscVRegister::SP,
@@ -175,7 +177,7 @@ mod tests {
             RiscVInstruction::Lui {
                 dest: RiscVRegister::A5,
                 src: RiscVVal::LabelOffset {
-                    label: ".LC0".to_string(),
+                    label: ".buf".to_string(),
                     offset: 9998, // %hi riscv
                 },
             },
@@ -183,7 +185,7 @@ mod tests {
                 dest: RiscVRegister::A2,
                 src: RiscVRegister::A5,
                 label: RiscVVal::LabelOffset {
-                    label: ".LC0".to_string(),
+                    label: ".buf".to_string(),
                     offset: 9999, // %lo riscv, :lo12: arm
                 },
             },

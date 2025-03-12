@@ -2,7 +2,7 @@ use std::fs;
 
 use crate::{instruction::RiscVInstruction, translate::translate_instrs};
 
-const start: &str = r#"
+pub const START: &str = r#"
 .text
 
 .global _start
@@ -15,9 +15,10 @@ svc #0
 main:
 "#;
 
+
 pub fn translate_to_file(instrs: Vec<RiscVInstruction>, path: String) {
     let arm_instrs = translate_instrs(instrs);
-    let mut contents = String::from(start);
+    let mut contents = String::new();
     for instr in arm_instrs {
         let x: String = instr.into();
         contents.push_str(&x);

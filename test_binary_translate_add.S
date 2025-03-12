@@ -1,18 +1,29 @@
-sub sp, sp, -32
+
+.text
+
+.global _start
+
+_start:
+bl main
+mov x8, #93
+svc #0
+
+main:
+sub sp, sp, 32
 str lr, [sp, 24]
-str x5, [sp, 16]
-add w5, sp, 32
-add x12, xzr, 3
-str w12, [w5, -20]
-add x12, xzr, 4
-str w12, [w5, -24]
-ldr w12, [w5, -20]
-add x11, x12, 0
-ldr w12, [w5, -24]
-add w12, w11, w12
-sxtw x12, w12
-add x7, x12, 0
+str x29, [sp, 16]
+add x29, sp, 32
+mov x5, 3
+str w5, [x29, -20]
+mov x5, 4
+str w5, [x29, -24]
+ldr w5, [x29, -20]
+add x4, x5, 0
+ldr w5, [x29, -24]
+add w5, w4, w5
+sxtw x5, w5
+add x0, x5, 0
 ldr lr, [sp, 24]
-ldr x5, [sp, 16]
+ldr x29, [sp, 16]
 add sp, sp, 32
 blr lr
