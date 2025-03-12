@@ -28,3 +28,4 @@ Cargo.lock
 *.bin
 
 .vscode/
+test_binary_translate*

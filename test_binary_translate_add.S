@@ -2,13 +2,18 @@
 .text
 
 .global _start
+.global _main
 
+.balign 4
 _start:
 bl main
 mov x8, #93
 svc #0
 
+.balign 4
+_main:
 main:
+
 sub sp, sp, 32
 str lr, [sp, 24]
 str x29, [sp, 16]
