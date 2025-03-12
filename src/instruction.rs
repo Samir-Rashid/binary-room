@@ -15,7 +15,7 @@ use strum_macros::EnumString;
 
 pub enum RiscVSyscalls {
     WRITE,
-    EXIT
+    EXIT,
 }
 
 impl RiscVSyscalls {
@@ -55,7 +55,7 @@ pub enum RiscVInstruction {
     Addl {
         dest: RiscVRegister,
         src: RiscVRegister,
-        label: RiscVVal
+        label: RiscVVal,
     },
     /// add register
     ///     either add or addw
@@ -75,12 +75,12 @@ pub enum RiscVInstruction {
     Ble {
         arg1: RiscVRegister,
         arg2: RiscVRegister,
-        target: RiscVVal
+        target: RiscVVal,
     },
     /// call label
     #[strum(serialize = "call")]
     Call {
-        label: RiscVVal
+        label: RiscVVal,
     },
     /// Store values from register rs2 to memory.
     ///
@@ -102,15 +102,15 @@ pub enum RiscVInstruction {
     },
     Directive {
         name: String,
-        operands: String
+        operands: String,
     },
     Label {
-        name: String
+        name: String,
     },
     #[strum(serialize = "lui")]
     Lui {
         dest: RiscVRegister,
-        src: RiscVVal
+        src: RiscVVal,
     },
     // Copy register
     // `mv rd, rs1` expands to `addi rd, rs, 0`
@@ -136,7 +136,9 @@ pub enum RiscVInstruction {
     },
     /// Jump label
     #[strum(serialize = "j")]
-    J { target: RiscVVal },
+    J {
+        target: RiscVVal,
+    },
     /// Jump Register
     /// Jump to address and place return address in rd.
     /// jal rd,offset
@@ -145,7 +147,9 @@ pub enum RiscVInstruction {
     ///     jr offset => jal x1, offset
     ///
     #[strum(serialize = "jr")]
-    Jr { target: RiscVRegister },
+    Jr {
+        target: RiscVRegister,
+    },
     /// Load Immediate
     /// This is a pseudo instruction, so it's not a real instruction
     ///
@@ -156,12 +160,17 @@ pub enum RiscVInstruction {
     /// semantics.
     /// https://michaeljclark.github.io/asm.html
     #[strum(serialize = "li")]
-    Li { dest: RiscVRegister, imm: i32 },
+    Li {
+        dest: RiscVRegister,
+        imm: i32,
+    },
     /// System Call
     #[strum(serialize = "ecall")]
     ECall,
     #[strum(serialize = "verbatim")]
-    Verbatim { text: String },
+    Verbatim {
+        text: String,
+    },
 }
 
 impl Default for RiscVInstruction {
@@ -175,7 +184,7 @@ impl Default for RiscVInstruction {
 
 pub enum ArmSyscalls {
     WRITE,
-    EXIT
+    EXIT,
 }
 
 impl ArmSyscalls {
@@ -192,7 +201,7 @@ pub enum ArmVal {
     Reg(ArmRegister),
     Imm(i32),
     RegOffset(ArmRegister, i32),
-    LabelOffset(String, i32)
+    LabelOffset(String, i32),
 }
 
 impl Default for ArmVal {
@@ -240,26 +249,38 @@ pub enum ArmInstruction {
     #[strum(serialize = "adrp")]
     Adrp {
         dest: ArmRegister,
-        label: ArmVal
+        label: ArmVal,
     },
     /// B Branch R15 := address
     #[strum(serialize = "b")]
-    B { target: ArmVal },
+    B {
+        target: ArmVal,
+    },
     /// BLR Xn
     #[strum(serialize = "blr")]
-    Blr { target: ArmRegisterName },
+    Blr {
+        target: ArmRegisterName,
+    },
     /// BLE label
     #[strum(serialize = "ble")]
-    Ble { arg1: ArmRegister, arg2: ArmRegister, target: ArmVal },
+    Ble {
+        arg1: ArmRegister,
+        arg2: ArmRegister,
+        target: ArmVal,
+    },
     /// BL label
     #[strum(serialize = "bl")]
-    Bl {target: ArmVal},
+    Bl {
+        target: ArmVal,
+    },
     /// label:
-    Label { name: String },
+    Label {
+        name: String,
+    },
     /// .directive operands
     Directive {
-        name: String, 
-        operands: String
+        name: String,
+        operands: String,
     },
     #[strum(serialize = "ldr")]
     Ldr {
@@ -271,7 +292,7 @@ pub enum ArmInstruction {
     Mov {
         width: ArmWidth,
         dest: ArmRegister,
-        src: ArmVal
+        src: ArmVal,
     },
     #[strum(serialize = "ret")]
     Ret,
@@ -291,21 +312,37 @@ pub enum ArmInstruction {
     },
     /// sign extend to word
     #[strum(serialize = "sxtw")]
-    Sxtw { dest: ArmRegister, src: ArmRegister },
-    /// service call 
+    Sxtw {
+        dest: ArmRegister,
+        src: ArmRegister,
+    },
+    /// service call
     #[strum(serialize = "svc")]
-    Svc { id: i32 },
+    Svc {
+        id: i32,
+    },
     /// compare
-    Cmp { op1: ArmRegister, op2: ArmVal },
-    Verbatim { text: String },
+    Cmp {
+        op1: ArmRegister,
+        op2: ArmVal,
+    },
+    Verbatim {
+        text: String,
+    },
 }
 
 impl Default for ArmInstruction {
     fn default() -> Self {
         ArmInstruction::Mov {
-            width: ArmWidth::Double, 
-            dest: ArmRegister { width: ArmWidth::Double, name: ArmRegisterName::X0 },
-            src: ArmVal::Reg(ArmRegister { width: ArmWidth::Double, name: ArmRegisterName::X0 })
+            width: ArmWidth::Double,
+            dest: ArmRegister {
+                width: ArmWidth::Double,
+                name: ArmRegisterName::X0,
+            },
+            src: ArmVal::Reg(ArmRegister {
+                width: ArmWidth::Double,
+                name: ArmRegisterName::X0,
+            }),
         }
     }
 }
@@ -321,8 +358,8 @@ pub enum RiscVVal {
     },
     LabelOffset {
         label: String,
-        offset: i32
-    }
+        offset: i32,
+    },
 }
 
 impl Default for RiscVVal {
@@ -534,64 +571,58 @@ impl Into<String> for ArmInstruction {
             ArmInstruction::Adc => todo!(),
             ArmInstruction::Add { dest, arg1, arg2 } => {
                 format!("add {}, {}, {}", dest, arg1, arg2)
-            },
+            }
             ArmInstruction::And => todo!(),
             ArmInstruction::Adrp { dest, label } => {
                 format!("adrp {}, {}", dest, label)
             }
             ArmInstruction::B { target } => {
                 format!("b {}", target)
-            },
+            }
             ArmInstruction::Ble { arg1, arg2, target } => {
                 format!("cmp {}, {}\nble {}", arg1, arg2, target)
-            },
+            }
             ArmInstruction::Blr { target } => {
                 format!("blr {}", Into::<ArmRegister>::into(target))
-            },
-            ArmInstruction::Ldr { width, dest, src } => {
-                match width {
-                    ArmWidth::Word | ArmWidth::Double => format!("ldr {}, {}", dest, src),
-                    _ => todo!()
-                }
+            }
+            ArmInstruction::Ldr { width, dest, src } => match width {
+                ArmWidth::Word | ArmWidth::Double => format!("ldr {}, {}", dest, src),
+                _ => todo!(),
             },
             ArmInstruction::Mov { width, dest, src } => {
                 format!("mov {}, {}", dest, src)
-            },
+            }
             ArmInstruction::Ret => todo!(),
-            ArmInstruction::Str { width, src, dest } => {
-                match width {
-                    ArmWidth::Word => format!("str {}, {}", src, dest),
-                    ArmWidth::Double => format!("str {}, {}", src, dest),
-                    _ => todo!("{:?}", width)
-                }
+            ArmInstruction::Str { width, src, dest } => match width {
+                ArmWidth::Word => format!("str {}, {}", src, dest),
+                ArmWidth::Double => format!("str {}, {}", src, dest),
+                _ => todo!("{:?}", width),
             },
-            ArmInstruction::Sub { dest, arg1, arg2 } => 
-            {
+            ArmInstruction::Sub { dest, arg1, arg2 } => {
                 format!("sub {}, {}, {}", dest, arg1, arg2)
-            },
+            }
             ArmInstruction::Sxtw { dest, src } => {
                 format!("sxtw {}, {}", dest, src)
-            },
+            }
             ArmInstruction::Bl { target } => {
                 format!("bl {}", target)
-            },
+            }
             ArmInstruction::Label { name } => {
                 format!("{}:", name)
-            },
+            }
             ArmInstruction::Directive { name, operands } => {
                 format!(".{} {}", name, operands)
             }
             ArmInstruction::Svc { id } => {
                 format!("svc {}", id)
-            },
+            }
             ArmInstruction::Cmp { op1, op2 } => {
                 format!("cmp {}, {}", op1, op2)
             }
-            ArmInstruction::Verbatim { text } => text 
+            ArmInstruction::Verbatim { text } => text,
         }
     }
 }
-
 
 impl Into<String> for ArmRegister {
     fn into(self) -> String {
@@ -816,16 +847,16 @@ impl Display for ArmVal {
             ArmVal::RegOffset(arm_register, offset) => {
                 let double_reg = ArmRegister {
                     name: arm_register.name,
-                    width: ArmWidth::Double
+                    width: ArmWidth::Double,
                 };
                 write!(f, "[{}, {}]", double_reg, offset)
-            },
+            }
             ArmVal::LabelOffset(name, offset) => {
                 match offset {
                     0 => write!(f, "{}", name),
                     9998 => write!(f, "{}", name), // %hi in riscv is adrp with no offset in arm
                     9999 => write!(f, ":lo12:{}", name), // reserved for 12 low bits of label addr
-                    _ => write!(f, "[{}, {}]", name, offset)
+                    _ => write!(f, "[{}, {}]", name, offset),
                 }
             }
         }
@@ -834,6 +865,9 @@ impl Display for ArmVal {
 
 impl Into<ArmRegister> for ArmRegisterName {
     fn into(self) -> ArmRegister {
-        ArmRegister { width: ArmWidth::Double, name: self }
+        ArmRegister {
+            width: ArmWidth::Double,
+            name: self,
+        }
     }
 }
