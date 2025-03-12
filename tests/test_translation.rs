@@ -9,7 +9,6 @@ mod tests {
     #[test]
     fn test_binary_translate() {
         let riscv_asm: Vec<RiscVInstruction> = vec![
-            RiscVInstruction::Verbatim { text: START.to_string() },
             RiscVInstruction::Addi {
                 dest: RiscVRegister::SP,
                 src: RiscVRegister::SP,
@@ -177,7 +176,7 @@ mod tests {
             RiscVInstruction::Lui {
                 dest: RiscVRegister::A5,
                 src: RiscVVal::LabelOffset {
-                    label: ".buf".to_string(),
+                    label: ".LC0".to_string(),
                     offset: 9998, // %hi riscv
                 },
             },
@@ -185,7 +184,7 @@ mod tests {
                 dest: RiscVRegister::A2,
                 src: RiscVRegister::A5,
                 label: RiscVVal::LabelOffset {
-                    label: ".buf".to_string(),
+                    label: ".LC0".to_string(),
                     offset: 9999, // %lo riscv, :lo12: arm
                 },
             },
@@ -235,9 +234,11 @@ mod tests {
     #[test]
     fn test_loop() {
         let riscv_asm: Vec<RiscVInstruction> = vec![
+            RiscVInstruction::Verbatim { text: START.to_string() },
+            RiscVInstruction::Label { name: "main".to_string() },
             RiscVInstruction::Addi { dest: RiscVRegister::SP, src: RiscVRegister::SP, imm: -32 },
-            RiscVInstruction::S { width: RiscVWidth::Double, src: RiscVRegister::S0FP, dest: RiscVVal::Offset { register: RiscVRegister::S0FP, offset: 24 } },
-            RiscVInstruction::Addi { dest: RiscVRegister::SP, src: RiscVRegister::SP, imm: 32 },
+            RiscVInstruction::S { width: RiscVWidth::Double, src: RiscVRegister::S0FP, dest: RiscVVal::Offset { register: RiscVRegister::SP, offset: 24 } },
+            RiscVInstruction::Addi { dest: RiscVRegister::S0FP, src: RiscVRegister::SP, imm: 32 },
             RiscVInstruction::S { width: RiscVWidth::Word, src: RiscVRegister::X0, dest: RiscVVal::Offset { register: RiscVRegister::S0FP, offset: -20 } },
             RiscVInstruction::J { target: RiscVVal::LabelOffset { label: ".L2".to_string(), offset: 0 }},
             RiscVInstruction::Label { name: ".L3".to_string() },

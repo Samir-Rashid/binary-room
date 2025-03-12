@@ -543,7 +543,7 @@ impl Into<String> for ArmInstruction {
                 format!("b {}", target)
             },
             ArmInstruction::Ble { arg1, arg2, target } => {
-                format!("cmp {}, {}\n blt {}", arg1, arg2, target)
+                format!("cmp {}, {}\nble {}", arg1, arg2, target)
             },
             ArmInstruction::Blr { target } => {
                 format!("blr {}", Into::<ArmRegister>::into(target))
