@@ -1,5 +1,7 @@
 # binary-room
 
+[![Tests](https://github.com/Samir-Rashid/binary-room/actions/workflows/cargo_test.yml/badge.svg)](https://github.com/Samir-Rashid/binary-room/actions/workflows/cargo_test.yml)
+
 Binary translator from RISC-V to ARM written in Rust
 
 
