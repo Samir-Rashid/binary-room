@@ -25,5 +25,5 @@ add x0, x12, 0
 ldr lr, [sp, 24]
 ldr fp, [sp, 16]
 add sp, sp, 32
-ret
+blr lr
 

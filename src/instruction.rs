@@ -13,6 +13,20 @@ use std::fmt::{format, write, Display};
 /// https://github.com/nbdd0121/r2vm/blob/5118be6b9e757c6fef2f019385873f403c23c548/lib/riscv/src/op.rs#L30
 use strum_macros::EnumString;
 
+pub enum RiscVSyscalls {
+    WRITE,
+    EXIT
+}
+
+impl RiscVSyscalls {
+    const fn value(&self) -> i32 {
+        match self {
+            Self::WRITE => 64,
+            Self::EXIT => 0,
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 pub enum RiscVWidth {
     Word,
@@ -143,6 +157,11 @@ pub enum RiscVInstruction {
     /// https://michaeljclark.github.io/asm.html
     #[strum(serialize = "li")]
     Li { dest: RiscVRegister, imm: i32 },
+    /// System Call
+    #[strum(serialize = "ecall")]
+    ECall,
+    #[strum(serialize = "verbatim")]
+    Verbatim { text: String },
 }
 
 impl Default for RiscVInstruction {
@@ -150,6 +169,20 @@ impl Default for RiscVInstruction {
         Self::Li {
             dest: RiscVRegister::X0,
             imm: 0,
+        }
+    }
+}
+
+pub enum ArmSyscalls {
+    WRITE,
+    EXIT
+}
+
+impl ArmSyscalls {
+    const fn value(&self) -> i32 {
+        match self {
+            Self::WRITE => 64,
+            Self::EXIT => 0,
         }
     }
 }
@@ -259,6 +292,12 @@ pub enum ArmInstruction {
     /// sign extend to word
     #[strum(serialize = "sxtw")]
     Sxtw { dest: ArmRegister, src: ArmRegister },
+    /// service call 
+    #[strum(serialize = "svc")]
+    Svc { id: i32 },
+    /// compare
+    Cmp { op1: ArmRegister, op2: ArmVal },
+    Verbatim { text: String },
 }
 
 impl Default for ArmInstruction {
@@ -542,6 +581,13 @@ impl Into<String> for ArmInstruction {
             ArmInstruction::Directive { name, operands } => {
                 format!(".{} {}", name, operands)
             }
+            ArmInstruction::Svc { id } => {
+                format!("svc {}", id)
+            },
+            ArmInstruction::Cmp { op1, op2 } => {
+                format!("cmp {}, {}", op1, op2)
+            }
+            ArmInstruction::Verbatim { text } => text 
         }
     }
 }
@@ -621,7 +667,7 @@ impl Into<String> for ArmRegister {
             (ArmRegisterName::X8, ArmWidth::Half) => todo!(),
             (ArmRegisterName::X8, ArmWidth::SignedHalf) => todo!(),
             (ArmRegisterName::X8, ArmWidth::Word) => todo!(),
-            (ArmRegisterName::X8, ArmWidth::Double) => todo!(),
+            (ArmRegisterName::X8, ArmWidth::Double) => "x8",
             (ArmRegisterName::X9, ArmWidth::Byte) => todo!(),
             (ArmRegisterName::X9, ArmWidth::SignedByte) => todo!(),
             (ArmRegisterName::X9, ArmWidth::Half) => todo!(),

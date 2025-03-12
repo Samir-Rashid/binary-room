@@ -35,6 +35,7 @@
             ];
             packages = with pkgs; [
               rust-analyzer-nightly
+              clang-tools
             ];
           };
         }
