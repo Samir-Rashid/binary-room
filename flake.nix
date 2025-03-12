@@ -1,3 +1,5 @@
+# dual cross compile toolchain
+# https://github.com/noteed/riscv-hello-asm/blob/main/shell.nix
 {
   description = "binary-room";
 
@@ -35,6 +37,8 @@
             ];
             packages = with pkgs; [
               rust-analyzer-nightly
+              clang-tools
+              hyperfine # benchmarking tool
             ];
           };
         }

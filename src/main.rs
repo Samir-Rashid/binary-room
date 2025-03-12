@@ -1,35 +1,10 @@
 use std::fs;
 use std::str::FromStr;
-mod instruction;
-use instruction::Instruction;
-
-/// Parse a text file into our enum.
-fn parse_asm(asm: &str) -> Vec<Instruction> {
-    asm.lines()
-        .filter_map(|line| {
-            // TODO (Samir): Not sure that this will handle assembly labels
-            // We probably need to construct a map for those to find the
-            // original instruction they map to.
-            let parts: Vec<&str> = line.split_whitespace().collect();
-            if parts.is_empty() {
-                None
-            } else {
-                Instruction::from_str(parts[0]).ok()
-            }
-        })
-        .collect()
-}
-
-/// Runs binary translation
-///   text file -> [`Instruction`] enum array -> text file
-fn binary_translate(riscv_asm: &str) -> String {
-    let instructions = parse_asm(riscv_asm);
-    instructions
-        .into_iter()
-        .map(|instr| format!("{:?}", instr))
-        .collect::<Vec<String>>()
-        .join("\n")
-}
+pub mod instruction;
+pub mod translate;
+pub mod utils;
+use instruction::RiscVInstruction;
+use translate::binary_translate;
 
 // Samir: I am using main for testing, but it not needed since you can run
 // `cargo test` instead.
