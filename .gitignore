@@ -26,6 +26,8 @@ Cargo.lock
 
 # temporary files
 *.bin
+*.as
+a.out
 
 .vscode/
 test_binary_translate*

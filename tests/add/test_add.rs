@@ -9,7 +9,9 @@ mod tests {
     #[test]
     fn test_binary_translate() {
         let riscv_asm: Vec<RiscVInstruction> = vec![
-            RiscVInstruction::Verbatim { text: START.to_string() },
+            RiscVInstruction::Verbatim {
+                text: START.to_string(),
+            },
             RiscVInstruction::Addi {
                 dest: RiscVRegister::SP,
                 src: RiscVRegister::SP,

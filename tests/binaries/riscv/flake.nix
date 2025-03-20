@@ -19,6 +19,7 @@
         # Use the same mkShell as documented above
         packages = with pkgs; [
           gcc
+          # qemu
           # pkgs.clang-tools
         ];
       };
