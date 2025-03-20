@@ -27,5 +27,6 @@ pub fn translate_to_file(instrs: Vec<RiscVInstruction>, path: String) {
         contents.push_str(&x);
         contents.push_str("\n");
     }
-    fs::write(path, contents).expect("Unable to write file");
+    fs::write(&path, contents).expect("Unable to write file");
+    println!("Saved ARM assembly to {}", path);
 }
