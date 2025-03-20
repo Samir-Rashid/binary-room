@@ -11,7 +11,7 @@
       pkgs = import nixpkgs {
         # inherit system;
         system = "x86_64-linux";
-        crossSystem.config = "aarch64-linux-gnu";
+        crossSystem.config = "riscv64-linux-gnu";
       };
     in
     {

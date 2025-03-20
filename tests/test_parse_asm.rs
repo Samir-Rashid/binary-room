@@ -1,7 +1,6 @@
 // #[cfg(test)]
 // mod tests {
-//     use super::RiscVInstruction;
-//     use super::*;
+//     use binary_room::instruction::parse_asm;
 
 //     #[test]
 //     fn test_parse_asm() {
