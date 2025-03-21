@@ -6,3 +6,9 @@ mod echo;
 
 #[path = "print/test_print.rs"]
 mod print;
+
+#[path = "fib/test_fib.rs"]
+mod fib;
+
+#[path = "prime/test_prime.rs"]
+mod prime;

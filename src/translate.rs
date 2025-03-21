@@ -44,6 +44,38 @@ pub fn translate(riscv_instr: RiscVInstruction) -> Vec<ArmInstruction> {
                 target: map_val(target, &width),
             }
         }],
+        RiscVInstruction::Bge { arg1, arg2, target } => vec![{
+            let width = RiscVWidth::Double;
+            ArmInstruction::Bge {
+                arg1: map_register(arg1, &width),
+                arg2: map_register(arg2, &width),
+                target: map_val(target, &width),
+            }
+        }],
+        RiscVInstruction::Blt { arg1, arg2, target } => vec![{
+            let width = RiscVWidth::Double;
+            ArmInstruction::Blt {
+                arg1: map_register(arg1, &width),
+                arg2: map_register(arg2, &width),
+                target: map_val(target, &width),
+            }
+        }],
+        RiscVInstruction::Bgt { arg1, arg2, target } => vec![{
+            let width = RiscVWidth::Double;
+            ArmInstruction::Bgt {
+                arg1: map_register(arg1, &width),
+                arg2: map_register(arg2, &width),
+                target: map_val(target, &width),
+            }
+        }],
+        RiscVInstruction::Bne { arg1, arg2, target } => vec![{
+            let width = RiscVWidth::Double;
+            ArmInstruction::Bne {
+                arg1: map_register(arg1, &width),
+                arg2: map_register(arg2, &width),
+                target: map_val(target, &width),
+            }
+        }],
         RiscVInstruction::J { target } => vec![ArmInstruction::B {
             target: map_val(target, &RiscVWidth::Double),
         }],
@@ -52,6 +84,14 @@ pub fn translate(riscv_instr: RiscVInstruction) -> Vec<ArmInstruction> {
             src: map_register(src, &width),
             dest: map_val(dest, &width),
         }],
+        RiscVInstruction::Slli { dest, src, imm } => {
+            let width = RiscVWidth::Double;
+            vec![ArmInstruction::Lsl {
+                dest: map_register(dest, &width),
+                src: map_register(src, &width),
+                imm: imm
+            }]
+        },
         RiscVInstruction::L { width, dest, src } => vec![ArmInstruction::Ldr {
             width: map_width(&width),
             dest: map_register(dest, &width),
@@ -101,7 +141,55 @@ pub fn translate(riscv_instr: RiscVInstruction) -> Vec<ArmInstruction> {
                     name: map_register_name(arg2),
                 }),
             }],
-            RiscVWidth::Double => sorry!(),
+            RiscVWidth::Double => vec![ArmInstruction::Add {
+                dest: ArmRegister {
+                    width: ArmWidth::Double,
+                    name: map_register_name(dest),
+                },
+                arg1: ArmRegister {
+                    width: ArmWidth::Double,
+                    name: map_register_name(arg1),
+                },
+                arg2: ArmVal::Reg(ArmRegister {
+                    width: ArmWidth::Double,
+                    name: map_register_name(arg2),
+                }),
+            }],
+        },
+        RiscVInstruction::Sub {
+            width,
+            dest,
+            arg1,
+            arg2,
+        } => match width {
+            RiscVWidth::Word => vec![ArmInstruction::Sub {
+                dest: ArmRegister {
+                    width: ArmWidth::Word,
+                    name: map_register_name(dest),
+                },
+                arg1: ArmRegister {
+                    width: ArmWidth::Word,
+                    name: map_register_name(arg1),
+                },
+                arg2: ArmVal::Reg(ArmRegister {
+                    width: ArmWidth::Word,
+                    name: map_register_name(arg2),
+                }),
+            }],
+            RiscVWidth::Double => vec![ArmInstruction::Sub {
+                dest: ArmRegister {
+                    width: ArmWidth::Double,
+                    name: map_register_name(dest),
+                },
+                arg1: ArmRegister {
+                    width: ArmWidth::Double,
+                    name: map_register_name(arg1),
+                },
+                arg2: ArmVal::Reg(ArmRegister {
+                    width: ArmWidth::Double,
+                    name: map_register_name(arg2),
+                }),
+            }],
         },
         RiscVInstruction::SextW { dest, src } => vec![ArmInstruction::Sxtw {
             dest: ArmRegister {

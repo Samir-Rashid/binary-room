@@ -19,6 +19,27 @@ _main:
 main:
 "#;
 
+pub const START_NO_MAIN: &str = r#"
+.text
+
+.global _start
+.global _main
+
+.balign 4
+_start:
+bl main
+mov x8, #93
+svc #0
+"#;
+
+/// Assembler directives for main only, used when another 
+/// function defined before main
+pub const START_MAIN: &str = r#"
+.balign 4
+_main:
+main:
+"#;
+
 pub fn translate_to_file(instrs: Vec<RiscVInstruction>, path: String) {
     let arm_instrs = translate_instrs(instrs);
     let mut contents = String::new();
