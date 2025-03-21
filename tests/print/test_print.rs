@@ -1,10 +1,14 @@
 #[cfg(test)]
 mod tests {
     use binary_room::instruction::*;
+    use binary_room::parser::parse_objdump;
     use binary_room::translate::*;
     use binary_room::utils;
     use binary_room::utils::translate_to_file;
     use binary_room::utils::ARM_START;
+    use binary_room::utils::START;
+    use std::process::Command;
+    use std::str;
 
     const buf: &str = r#"
 buf:
@@ -12,7 +16,8 @@ buf:
 "#;
 
     #[test]
-    fn test_print_translate() {
+    fn test_print_translate_manual() {
+        // Original manual encoding approach
         let riscv_asm: Vec<RiscVInstruction> = vec![
             RiscVInstruction::Verbatim {
                 text: buf.to_string(),
@@ -92,5 +97,34 @@ buf:
         ];
 
         translate_to_file(riscv_asm, "./tests/print/print.arm.s".to_string());
+    }
+    
+    #[test]
+    fn test_print_translate_automated() {
+        // Run the objdump command to disassemble the binary
+        let output = Command::new("riscv64-unknown-linux-gnu-objdump")
+            .args(["--no-show-raw-insn", "-d", "./tests/print/print.riscv.s.bin"])
+            .output()
+            .expect("Failed to execute objdump command");
+        
+        let objdump_output = str::from_utf8(&output.stdout).expect("Invalid UTF-8 output");
+        
+        // Parse the objdump output to get RiscVInstructions
+        let instructions = parse_objdump(objdump_output);
+        
+        // Add the buffer verbatim text and START label at the beginning
+        let mut riscv_asm = Vec::new();
+        riscv_asm.push(RiscVInstruction::Verbatim { 
+            text: buf.to_string() 
+        });
+        riscv_asm.push(RiscVInstruction::Verbatim { 
+            text: START.to_string() 
+        });
+        
+        // Add the parsed instructions
+        riscv_asm.extend(instructions);
+        
+        // Translate and save to file
+        translate_to_file(riscv_asm, "./tests/print/print_automated.arm.s".to_string());
     }
 }

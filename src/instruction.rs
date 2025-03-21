@@ -426,7 +426,7 @@ impl Default for ArmInstruction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum RiscVVal {
     RiscVRegister(RiscVRegister),
     Immediate(i32),
@@ -449,7 +449,7 @@ impl Default for RiscVVal {
 
 /// RISC-V Registers
 /// https://msyksphinz-self.github.io/riscv-isadoc/html/regs.html
-#[derive(Debug, EnumString, Default)]
+#[derive(Debug, EnumString, Default, PartialEq, Eq, Clone)]
 pub enum RiscVRegister {
     #[default]
     #[strum(serialize = "x0")]
