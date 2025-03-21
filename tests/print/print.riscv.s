@@ -1,5 +1,5 @@
 buf:
-    .string "Hello world!"
+    .string "Hello world!\n"
 
 .section .text
 .globl _start

@@ -6,7 +6,20 @@
 
 .balign 4
 _start:
+# i = 10,000
+mov x3, #10000
+# while i > 0
+.loop:
+sub x3, x3, 1
+
+cmp x3, xzr
+ble .end
+
+# main()
 bl main
+
+b .loop
+.end:
 mov x8, #93
 svc #0
 

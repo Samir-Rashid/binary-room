@@ -1,5 +1,5 @@
 
-.buf:
+buf:
     .string "hello world\n"
 
 
@@ -18,11 +18,19 @@ svc #0
 _main:
 main:
 
+mov x3, 1000
+.loop:
+sub x3, x3, 1
+cmp x3, xzr
+ble .end
 mov x8, 64
 mov x2, 14
-adrp x0, .buf
-add x1, x0, :lo12:.buf
+adrp x0, buf
+add x1, x0, :lo12:buf
 mov x0, 1
 svc 0
+b .loop
+.end:
 mov x8, 93
+mov x0, 0
 svc 0
