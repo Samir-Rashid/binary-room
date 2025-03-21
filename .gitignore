@@ -26,6 +26,7 @@ Cargo.lock
 
 # temporary files
 *.bin
+*.arm.s
 *.as
 a.out
 
