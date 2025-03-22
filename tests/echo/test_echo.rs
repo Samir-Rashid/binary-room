@@ -4,7 +4,7 @@ mod tests {
     use binary_room::translate::*;
     use binary_room::utils;
     use binary_room::utils::translate_to_file;
-    use binary_room::utils::START;
+    use binary_room::utils::ARM_START;
 
     const buf: &str = r#"
 .buf:
@@ -16,7 +16,7 @@ mod tests {
         let riscv_asm: Vec<RiscVInstruction> = vec![
             // RiscVInstruction::Verbatim { text: buf.to_string() },
             RiscVInstruction::Verbatim {
-                text: START.to_string(),
+                text: ARM_START.to_string(),
             },
             // read syscall
             RiscVInstruction::Addi {

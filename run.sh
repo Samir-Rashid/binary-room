@@ -1,18 +1,34 @@
 #!/usr/bin/env bash
 
-ASM_FILE=$1
+ARCH=$1
+ASM_FILE=$2
 PLATFORM=""
 LD_FLAGS=""
-BENCHMARKING="false" # "true" to enable
+BENCHMARKING="true" # "true" to enable
+QEMU=""
 
-if [[ -z "$ASM_FILE" ]]; then
-    echo "Error: Assembly (.S) file is not passed in."
-    echo "Usage: ./run.sh test_binary_translate_add.S"
+if [[ -z "$ARCH" || -z "$ASM_FILE" ]]; then
+    echo "Error: Architecture and assembly (.S) file must be provided."
+    echo "Usage: ./run.sh [riscv|arm] <assembly_file.S>"
     exit 1
 fi
 
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    PLATFORM="aarch64-linux-gnu"
+if [[ "$ARCH" != "riscv" && "$ARCH" != "arm" ]]; then
+    echo "Error: Architecture must be either 'riscv' or 'arm'."
+    echo "Usage: ./run.sh [riscv|arm] <assembly_file.S>"
+    exit 1
+fi
+
+if [[ "$ARCH" == "riscv" ]]; then
+    QEMU="qemu-riscv64"
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        PLATFORM="riscv64-unknown-linux-gnu-"
+    fi
+elif [[ "$ARCH" == "arm" ]]; then
+    QEMU="qemu-aarch64"
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        PLATFORM="aarch64-unknown-linux-gnu-"
+    fi
 fi
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -23,9 +39,10 @@ fi
 "$PLATFORM"as "$ASM_FILE" -o "$ASM_FILE".as || { echo "Assembly compilation failed"; exit 1; }
 "$PLATFORM"ld "$ASM_FILE".as -o "$ASM_FILE".bin $LD_FLAGS || { echo "Linking failed"; exit 1; }
 
-./"$ASM_FILE".bin
+"$QEMU" ./"$ASM_FILE".bin
 echo "$?"
 
 if [ "$BENCHMARKING" = true ]; then
-    hyperfine -r 1000 -w 100 -Ni ./"$ASM_FILE".bin
+    hyperfine -r 1000 -w 100 -Ni ""$QEMU" ./"$ASM_FILE".bin"
 fi
+
