@@ -1,24 +1,24 @@
-; int is_prime(int n) {
-;     if (n <= 1) {
-;         return 0;
-;     }
-;     for (int i = 2; i < n; i++) {
-;         int temp = n - i;
-;         while (temp >= i) {
-;             temp = temp - i;
-;         }
-;         if (temp == 0) {
-;             // i divides n
-;             return 0;
-;         }
-;     }
-;     return 1;
-; }
-; int main(void) {
-; 	return is_prime(4093);
-; }
+# int is_prime(int n) {
+#     if (n <= 1) {
+#         return 0;
+#     }
+#     for (int i = 2; i < n; i++) {
+#         int temp = n - i;
+#         while (temp >= i) {
+#             temp = temp - i;
+#         }
+#         if (temp == 0) {
+#             // i divides n
+#             return 0;
+#         }
+#     }
+#     return 1;
+# }
+# int main(void) {
+# 	return is_prime(4093);
+# }
 
-is_prime(int):
+is_prime: # is_prime(int):
 addi    sp,sp,-48
 sd      s0,40(sp)
 addi    s0,sp,48
@@ -82,7 +82,7 @@ sd      ra,8(sp)
 sd      s0,0(sp)
 addi    s0,sp,16
 li      a0,4093
-call    is_prime(int)
+call    is_prime
 mv      a5,a0
 nop
 mv      a0,a5

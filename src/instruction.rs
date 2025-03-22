@@ -658,6 +658,10 @@ impl Into<String> for ArmInstruction {
             ArmInstruction::B { target } => {
                 format!("b {}", target)
             }
+            // TODO: Fix these branching instructions need to map to
+            // multiple instructions. Would be better separation of concerns
+            // if this was produced by the translation function instead of a
+            // hack in the string formatting.
             ArmInstruction::Ble { arg1, arg2, target } => {
                 format!("cmp {}, {}\nble {}", arg1, arg2, target)
             }
