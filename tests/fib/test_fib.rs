@@ -2,13 +2,13 @@
 mod tests {
     use binary_room::instruction::*;
     use binary_room::utils::translate_to_file;
-    use binary_room::utils::START;
+    use binary_room::utils::ARM_START;
 
     #[test]
     fn test_binary_translate() {
         let riscv_asm: Vec<RiscVInstruction> = vec![
             RiscVInstruction::Verbatim {
-                text: START.to_string(),
+                text: ARM_START.to_string(),
             },
             RiscVInstruction::Addi {
                 dest: RiscVRegister::SP,
