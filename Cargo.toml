@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 strum = "0.21.0"
 strum_macros = "0.21.1"
+regex = "1.10.4"

@@ -1,8 +1,6 @@
 #[cfg(test)]
 mod tests {
     use binary_room::instruction::*;
-    use binary_room::translate::*;
-    use binary_room::utils;
     use binary_room::utils::translate_to_file;
     use binary_room::utils::ARM_START;
 
