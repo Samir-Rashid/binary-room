@@ -1,9 +1,7 @@
 use std::fs;
-use std::str::FromStr;
 pub mod instruction;
 pub mod translate;
 pub mod utils;
-use instruction::RiscVInstruction;
 use translate::binary_translate;
 
 // Samir: I am using main for testing, but it not needed since you can run

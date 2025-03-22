@@ -93,7 +93,7 @@ mov x8, #93
 svc #0
 "#;
 
-/// Assembler directives for main only, used when another 
+/// Assembler directives for main only, used when another
 /// function defined before main
 pub const START_MAIN: &str = r#"
 .balign 4

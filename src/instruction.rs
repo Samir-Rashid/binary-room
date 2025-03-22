@@ -1,6 +1,5 @@
 use std::convert::Into;
-use std::default;
-use std::fmt::{format, write, Display};
+use std::fmt::Display;
 
 /// This file defines all the supported ARM and RISC-V instructions we support.
 /// We use `strum` to assist in serializing asm files to our [`Instruction`] enum.
@@ -133,7 +132,7 @@ pub enum RiscVInstruction {
     Slli {
         dest: RiscVRegister,
         src: RiscVRegister,
-        imm: i32
+        imm: i32,
     },
     /// Loads a value from memory into register rd for RV64I.
     ///
@@ -373,7 +372,7 @@ pub enum ArmInstruction {
     Lsl {
         dest: ArmRegister,
         src: ArmRegister,
-        imm: i32
+        imm: i32,
     },
     /// Str [r2 + offset] = r1
     #[strum(serialize = "str")]

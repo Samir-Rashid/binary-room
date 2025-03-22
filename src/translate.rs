@@ -89,9 +89,9 @@ pub fn translate(riscv_instr: RiscVInstruction) -> Vec<ArmInstruction> {
             vec![ArmInstruction::Lsl {
                 dest: map_register(dest, &width),
                 src: map_register(src, &width),
-                imm: imm
+                imm: imm,
             }]
-        },
+        }
         RiscVInstruction::L { width, dest, src } => vec![ArmInstruction::Ldr {
             width: map_width(&width),
             dest: map_register(dest, &width),
