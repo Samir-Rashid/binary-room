@@ -70,13 +70,50 @@ pub enum RiscVInstruction {
         arg1: RiscVRegister,
         arg2: RiscVRegister,
     },
+    #[strum(serialize = "subw")]
+    Sub {
+        // dest = arg1 - arg2
+        width: RiscVWidth,
+        dest: RiscVRegister,
+        arg1: RiscVRegister,
+        arg2: RiscVRegister,
+    },
     /// branch if less than or equal
-    #[strum(serialize = "call")]
+    #[strum(serialize = "ble")]
     Ble {
         arg1: RiscVRegister,
         arg2: RiscVRegister,
         target: RiscVVal,
     },
+    /// branch if greater than or equal
+    #[strum(serialize = "bge")]
+    Bge {
+        arg1: RiscVRegister,
+        arg2: RiscVRegister,
+        target: RiscVVal,
+    },
+    /// branch if less than
+    #[strum(serialize = "blt")]
+    Blt {
+        arg1: RiscVRegister,
+        arg2: RiscVRegister,
+        target: RiscVVal,
+    },
+    /// branch if greater than
+    #[strum(serialize = "bgt")]
+    Bgt {
+        arg1: RiscVRegister,
+        arg2: RiscVRegister,
+        target: RiscVVal,
+    },
+    /// branch if greater than
+    #[strum(serialize = "bne")]
+    Bne {
+        arg1: RiscVRegister,
+        arg2: RiscVRegister,
+        target: RiscVVal,
+    },
+    /// branch if greater than or equal to
     /// call label
     #[strum(serialize = "call")]
     Call {
@@ -90,6 +127,13 @@ pub enum RiscVInstruction {
         width: RiscVWidth,
         src: RiscVRegister,
         dest: RiscVVal,
+    },
+    /// Rd := Rs << Imm
+    #[strum(serialize = "Slli")]
+    Slli {
+        dest: RiscVRegister,
+        src: RiscVRegister,
+        imm: i32
     },
     /// Loads a value from memory into register rd for RV64I.
     ///
@@ -268,6 +312,34 @@ pub enum ArmInstruction {
         arg2: ArmRegister,
         target: ArmVal,
     },
+    /// BGE label
+    #[strum(serialize = "bge")]
+    Bge {
+        arg1: ArmRegister,
+        arg2: ArmRegister,
+        target: ArmVal,
+    },
+    /// BLT label
+    #[strum(serialize = "blt")]
+    Blt {
+        arg1: ArmRegister,
+        arg2: ArmRegister,
+        target: ArmVal,
+    },
+    /// BGT label
+    #[strum(serialize = "bgt")]
+    Bgt {
+        arg1: ArmRegister,
+        arg2: ArmRegister,
+        target: ArmVal,
+    },
+    /// BNE label
+    #[strum(serialize = "bne")]
+    Bne {
+        arg1: ArmRegister,
+        arg2: ArmRegister,
+        target: ArmVal,
+    },
     /// BL label
     #[strum(serialize = "bl")]
     Bl {
@@ -296,6 +368,13 @@ pub enum ArmInstruction {
     },
     #[strum(serialize = "ret")]
     Ret,
+    /// Rd := Rs << Imm
+    #[strum(serialize = "Lsl")]
+    Lsl {
+        dest: ArmRegister,
+        src: ArmRegister,
+        imm: i32
+    },
     /// Str [r2 + offset] = r1
     #[strum(serialize = "str")]
     Str {
@@ -579,8 +658,24 @@ impl Into<String> for ArmInstruction {
             ArmInstruction::B { target } => {
                 format!("b {}", target)
             }
+            // TODO: Fix these branching instructions need to map to
+            // multiple instructions. Would be better separation of concerns
+            // if this was produced by the translation function instead of a
+            // hack in the string formatting.
             ArmInstruction::Ble { arg1, arg2, target } => {
                 format!("cmp {}, {}\nble {}", arg1, arg2, target)
+            }
+            ArmInstruction::Bge { arg1, arg2, target } => {
+                format!("cmp {}, {}\nbge {}", arg1, arg2, target)
+            }
+            ArmInstruction::Blt { arg1, arg2, target } => {
+                format!("cmp {}, {}\nblt {}", arg1, arg2, target)
+            }
+            ArmInstruction::Bgt { arg1, arg2, target } => {
+                format!("cmp {}, {}\nbgt {}", arg1, arg2, target)
+            }
+            ArmInstruction::Bne { arg1, arg2, target } => {
+                format!("cmp {}, {}\nbne {}", arg1, arg2, target)
             }
             ArmInstruction::Blr { target } => {
                 format!("blr {}", Into::<ArmRegister>::into(target))
@@ -598,6 +693,9 @@ impl Into<String> for ArmInstruction {
                 ArmWidth::Double => format!("str {}, {}", src, dest),
                 _ => todo!("{:?}", width),
             },
+            ArmInstruction::Lsl { dest, src, imm } => {
+                format!("lsl {}, {}, {}", dest, src, imm)
+            }
             ArmInstruction::Sub { dest, arg1, arg2 } => {
                 format!("sub {}, {}, {}", dest, arg1, arg2)
             }
